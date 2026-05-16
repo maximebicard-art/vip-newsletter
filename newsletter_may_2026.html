@@ -5,596 +5,304 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIP & Industry News</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f5f5f5;
-            color: #1a1a1a;
-            line-height: 1.6;
-        }
-
-        .email-wrapper {
-            max-width: 680px;
-            margin: 0 auto;
-            background-color: #ffffff;
-        }
-
-        .header {
-            background-color: #000000;
-            color: #ffffff;
-            padding: 40px 30px;
-            text-align: center;
-        }
-
-        .header h1 {
-            font-size: 28px;
-            font-weight: 700;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            margin-bottom: 8px;
-        }
-
-        .header .subtitle {
-            font-size: 14px;
-            font-weight: 300;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            color: #cccccc;
-        }
-
-        .intro {
-            padding: 30px;
-            background-color: #fafafa;
-            border-bottom: 1px solid #eeeeee;
-        }
-
-        .intro p {
-            font-size: 15px;
-            color: #444444;
-            font-weight: 400;
-        }
-
-        .section {
-            padding: 30px;
-            border-bottom: 1px solid #eeeeee;
-        }
-
-        .section:last-child {
-            border-bottom: none;
-        }
-
-        .section-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .section-header h2 {
-            font-size: 18px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: #000000;
-        }
-
-        .section-header .line {
-            flex-grow: 1;
-            height: 1px;
-            background-color: #000000;
-            margin-left: 15px;
-        }
-
-        .events-grid {
-            display: grid;
-            grid-template-columns: 80px 1fr;
-            gap: 12px 20px;
-        }
-
-        .event-date {
-            font-weight: 600;
-            font-size: 14px;
-            color: #000000;
-            text-transform: uppercase;
-        }
-
-        .event-name {
-            font-size: 14px;
-            color: #333333;
-        }
-
-        .event-name a {
-            color: #333333;
-            text-decoration: none;
-        }
-
-        .event-name a:hover {
-            text-decoration: underline;
-        }
-
-        .news-list, .partnership-list, .casting-list {
-            list-style: none;
-        }
-
-        .news-list li, .partnership-list li, .casting-list li {
-            padding: 10px 0;
-            border-bottom: 1px solid #f0f0f0;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-
-        .news-list li:last-child, .partnership-list li:last-child, .casting-list li:last-child {
-            border-bottom: none;
-        }
-
-        .news-list li strong, .partnership-list li strong, .casting-list li strong {
-            font-weight: 600;
-            color: #000000;
-        }
-
-        .news-list li a {
-            color: #666666;
-            text-decoration: none;
-            font-size: 12px;
-            display: inline-block;
-            margin-top: 4px;
-        }
-
-        .news-list li a:hover {
-            text-decoration: underline;
-        }
-
-        .news-list li .source-tag {
-            display: inline-block;
-            background-color: #f0f0f0;
-            color: #666666;
-            font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 3px;
-            margin-top: 4px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .ambassador-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
-        .ambassador-item {
-            padding: 8px 0;
-            font-size: 14px;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        .ambassador-item strong {
-            font-weight: 600;
-        }
-
-        .ambassador-item a {
-            color: #333333;
-            text-decoration: none;
-        }
-
-        .ambassador-item a:hover {
-            text-decoration: underline;
-        }
-
-        .ambassador-item .source-tag {
-            display: inline-block;
-            background-color: #f0f0f0;
-            color: #666666;
-            font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 3px;
-            margin-top: 4px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .projects-category {
-            margin-bottom: 20px;
-        }
-
-        .projects-category h3 {
-            font-size: 13px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: #666666;
-            margin-bottom: 10px;
-            padding-bottom: 5px;
-            border-bottom: 2px solid #000000;
-            display: inline-block;
-        }
-
-        .projects-list li {
-            padding: 6px 0;
-            font-size: 14px;
-        }
-
-        .projects-list li strong {
-            font-weight: 600;
-        }
-
-        .projects-list li a {
-            color: #666666;
-            text-decoration: none;
-            font-size: 12px;
-            display: inline-block;
-            margin-top: 4px;
-        }
-
-        .projects-list li a:hover {
-            text-decoration: underline;
-        }
-
-        .projects-list li .source-tag {
-            display: inline-block;
-            background-color: #f0f0f0;
-            color: #666666;
-            font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 3px;
-            margin-top: 4px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .footer {
-            background-color: #000000;
-            color: #ffffff;
-            padding: 40px 30px;
-            text-align: center;
-        }
-
-        .footer .signature {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-
-        .footer .title {
-            font-size: 13px;
-            color: #aaaaaa;
-            margin-bottom: 20px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .footer .company {
-            font-size: 14px;
-            font-weight: 700;
-            margin-bottom: 15px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        .footer .contact {
-            font-size: 13px;
-            color: #aaaaaa;
-            line-height: 1.8;
-        }
-
-        .footer .contact a {
-            color: #ffffff;
-            text-decoration: none;
-        }
-
-        .cta-button {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 12px 30px;
-            background-color: #ffffff;
-            color: #000000;
-            text-decoration: none;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            border-radius: 0;
-        }
-
+        /* Fallback for clients that support style tags */
+        body { margin: 0; padding: 0; background-color: #f5f5f5; font-family: Arial, Helvetica, sans-serif; }
+        .email-wrapper { max-width: 680px; margin: 0 auto; background-color: #ffffff; }
+        .header { background-color: #000000; color: #ffffff; padding: 40px 30px; text-align: center; }
+        .header h1 { font-size: 28px; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; margin: 0 0 8px 0; }
+        .header .subtitle { font-size: 14px; font-weight: normal; letter-spacing: 3px; text-transform: uppercase; color: #cccccc; margin: 0; }
+        .intro { padding: 30px; background-color: #fafafa; border-bottom: 1px solid #eeeeee; }
+        .intro p { font-size: 15px; color: #444444; margin: 0 0 10px 0; line-height: 1.6; }
+        .section { padding: 30px; border-bottom: 1px solid #eeeeee; }
+        .section-header { display: flex; align-items: center; margin-bottom: 20px; }
+        .section-header h2 { font-size: 18px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px; color: #000000; margin: 0; }
+        .section-header .line { flex-grow: 1; height: 1px; background-color: #000000; margin-left: 15px; }
+        .events-grid { display: grid; grid-template-columns: 80px 1fr; gap: 12px 20px; }
+        .event-date { font-weight: bold; font-size: 14px; color: #000000; text-transform: uppercase; }
+        .event-name { font-size: 14px; color: #333333; line-height: 1.4; }
+        .event-name a { color: #333333; text-decoration: underline; }
+        .news-list, .partnership-list, .casting-list { list-style: none; margin: 0; padding: 0; }
+        .news-list li, .partnership-list li, .casting-list li { padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; line-height: 1.5; }
+        .news-list li:last-child, .partnership-list li:last-child, .casting-list li:last-child { border-bottom: none; }
+        .news-list li strong, .partnership-list li strong, .casting-list li strong { font-weight: bold; color: #000000; }
+        .news-list li a, .partnership-list li a, .casting-list li a { color: #0066cc; text-decoration: underline; font-size: 12px; }
+        .news-list li .source-tag, .partnership-list li .source-tag, .casting-list li .source-tag { display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .ambassador-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .ambassador-item { padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f0f0f0; }
+        .ambassador-item strong { font-weight: bold; }
+        .ambassador-item a { color: #333333; text-decoration: underline; }
+        .ambassador-item .source-tag { display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .projects-category { margin-bottom: 20px; }
+        .projects-category h3 { font-size: 13px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px; color: #666666; margin: 0 0 10px 0; padding-bottom: 5px; border-bottom: 2px solid #000000; display: inline-block; }
+        .projects-list { list-style: none; margin: 0; padding: 0; }
+        .projects-list li { padding: 6px 0; font-size: 14px; line-height: 1.5; }
+        .projects-list li strong { font-weight: bold; }
+        .projects-list li a { color: #0066cc; text-decoration: underline; font-size: 12px; }
+        .projects-list li .source-tag { display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .footer { background-color: #000000; color: #ffffff; padding: 40px 30px; text-align: center; }
+        .footer .signature { font-size: 16px; font-weight: bold; margin-bottom: 5px; }
+        .footer .title { font-size: 13px; color: #aaaaaa; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; }
+        .footer .company { font-size: 14px; font-weight: bold; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px; }
+        .footer .contact { font-size: 13px; color: #aaaaaa; line-height: 1.8; }
+        .footer .contact a { color: #ffffff; text-decoration: underline; }
+        .cta-button { display: inline-block; margin-top: 20px; padding: 12px 30px; background-color: #ffffff; color: #000000; text-decoration: none; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px; }
         @media screen and (max-width: 600px) {
-            .ambassador-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .events-grid {
-                grid-template-columns: 1fr;
-                gap: 4px 0;
-            }
-
-            .event-date {
-                margin-top: 10px;
-            }
-
-            .section {
-                padding: 20px;
-            }
-
-            .header h1 {
-                font-size: 22px;
-            }
+            .ambassador-grid { grid-template-columns: 1fr; }
+            .events-grid { grid-template-columns: 1fr; gap: 4px 0; }
+            .event-date { margin-top: 10px; }
+            .section { padding: 20px; }
+            .header h1 { font-size: 22px; }
         }
     </style>
 <base target="_blank">
 </head>
-<body>
-    <div class="email-wrapper">
+<body style="margin: 0; padding: 0; background-color: #f5f5f5; font-family: Arial, Helvetica, sans-serif;">
+    <div class="email-wrapper" style="max-width: 680px; margin: 0 auto; background-color: #ffffff;">
         <!-- Header -->
-        <div class="header">
-            <h1>VIP & Industry News</h1>
-            <div class="subtitle">May 2026</div>
+        <div class="header" style="background-color: #000000; color: #ffffff; padding: 40px 30px; text-align: center;">
+            <h1 style="font-size: 28px; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; margin: 0 0 8px 0;">VIP & Industry News</h1>
+            <div class="subtitle" style="font-size: 14px; font-weight: normal; letter-spacing: 3px; text-transform: uppercase; color: #cccccc; margin: 0;">May 2026</div>
         </div>
 
         <!-- Introduction -->
-        <div class="intro">
-            <p>Hi all,</p>
-            <p style="margin-top: 10px;">I hope you are all doing well. I'm excited to share this month's VIP/Industry News with you all!</p>
+        <div class="intro" style="padding: 30px; background-color: #fafafa; border-bottom: 1px solid #eeeeee;">
+            <p style="font-size: 15px; color: #444444; margin: 0 0 10px 0; line-height: 1.6;">Hi all,</p>
+            <p style="font-size: 15px; color: #444444; margin: 0; line-height: 1.6;">I hope you are all doing well. I'm excited to share this month's VIP/Industry News with you all!</p>
         </div>
 
         <!-- Key Award Shows & Events -->
-        <div class="section">
-            <div class="section-header">
-                <h2>Key Award Shows & Events Ahead</h2>
-                <div class="line"></div>
+        <div class="section" style="padding: 30px; border-bottom: 1px solid #eeeeee;">
+            <div class="section-header" style="display: flex; align-items: center; margin-bottom: 20px;">
+                <h2 style="font-size: 18px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px; color: #000000; margin: 0;">Key Award Shows & Events Ahead</h2>
+                <div class="line" style="flex-grow: 1; height: 1px; background-color: #000000; margin-left: 15px;"></div>
             </div>
-            <div class="events-grid">
+            <div class="events-grid" style="display: grid; grid-template-columns: 80px 1fr; gap: 12px 20px;">
                 
-                <div class="event-date">TBA</div>
-                <div class="event-name">
+                <div class="event-date" style="font-weight: bold; font-size: 14px; color: #000000; text-transform: uppercase;">May 15</div>
+                <div class="event-name" style="font-size: 14px; color: #333333; line-height: 1.4;">
                     
-                    <a href="https://www.hollywoodreporter.com/movies/movie-news/john-travolta-cannes-honorary-palme-dor-1236596754/">John Travolta Teary as He Accepts Surprise Palme d’Or Before Directorial Debut ‘Propeller’ Screens at Cannes</a>
+                    <a href="https://www.hollywoodreporter.com/movies/movie-news/john-travolta-cannes-honorary-palme-dor-1236596754/" style="color: #333333; text-decoration: underline;">John Travolta Teary as He Accepts Surprise Palme d’Or Before Directorial Debut ‘Propeller’ Screens at Cannes</a>
                     
                 </div>
                 
-                <div class="event-date">TBA</div>
-                <div class="event-name">
+                <div class="event-date" style="font-weight: bold; font-size: 14px; color: #000000; text-transform: uppercase;">May 13</div>
+                <div class="event-name" style="font-size: 14px; color: #333333; line-height: 1.4;">
                     
-                    <a href="https://www.hollywoodreporter.com/movies/movie-news/2026-student-academy-awards-toronto-film-festival-1236594917/">Student Academy Awards Will Be Held at Toronto International Film Festival</a>
-                    
-                </div>
-                
-                <div class="event-date">Set 20</div>
-                <div class="event-name">
-                    
-                    <a href="https://www.hollywoodreporter.com/music/music-news/grammys-2027-key-dates-1236593600/">Grammys Set 2027 Ceremony, Nomination Dates</a>
+                    <a href="https://www.hollywoodreporter.com/movies/movie-news/2026-student-academy-awards-toronto-film-festival-1236594917/" style="color: #333333; text-decoration: underline;">Student Academy Awards Will Be Held at Toronto International Film Festival</a>
                     
                 </div>
                 
-                <div class="event-date">TBA</div>
-                <div class="event-name">
+                <div class="event-date" style="font-weight: bold; font-size: 14px; color: #000000; text-transform: uppercase;">May 12</div>
+                <div class="event-name" style="font-size: 14px; color: #333333; line-height: 1.4;">
                     
-                    <a href="https://www.hollywoodreporter.com/movies/movie-news/conan-obrien-host-2027-oscars-1236593897/">Conan O’Brien to Return as Oscars Host for Third Year in a Row</a>
-                    
-                </div>
-                
-                <div class="event-date">TBA</div>
-                <div class="event-name">
-                    
-                    <a href="https://www.hollywoodreporter.com/news/general-news/mirror-awards-nominees-the-hollywood-reporter-1236592619/">The Hollywood Reporter Nabs Mirror Awards Nomination</a>
+                    <a href="https://www.hollywoodreporter.com/movies/movie-news/conan-obrien-host-2027-oscars-1236593897/" style="color: #333333; text-decoration: underline;">Conan O’Brien to Return as Oscars Host for Third Year in a Row</a>
                     
                 </div>
                 
-                <div class="event-date">Lands 65</div>
-                <div class="event-name">
+                <div class="event-date" style="font-weight: bold; font-size: 14px; color: #000000; text-transform: uppercase;">May 11</div>
+                <div class="event-name" style="font-size: 14px; color: #333333; line-height: 1.4;">
                     
-                    <a href="https://www.hollywoodreporter.com/news/general-news/hollywood-reporter-socal-journalism-awards-2026-nominations-1236592573/">The Hollywood Reporter Lands 65 SoCal Journalism Awards, Including Journalist of the Year, Best Print Issue and Best Website</a>
-                    
-                </div>
-                
-                <div class="event-date">TBA</div>
-                <div class="event-name">
-                    
-                    <a href="https://variety.com/2026/tv/awards/chad-powers-star-glen-powell-schedule-burnt-out-1236750250/">‘Chad Powers’ Star Glen Powell Is Everywhere, But He Promises He’s Not Burnt Out: ‘I Think People Are Worried About Me’</a>
+                    <a href="https://www.hollywoodreporter.com/news/general-news/hollywood-reporter-socal-journalism-awards-2026-nominations-1236592573/" style="color: #333333; text-decoration: underline;">The Hollywood Reporter Lands 65 SoCal Journalism Awards, Including Journalist of the Year, Best Print Issue and Best Website</a>
                     
                 </div>
                 
-                <div class="event-date">TBA</div>
-                <div class="event-name">
+                <div class="event-date" style="font-weight: bold; font-size: 14px; color: #000000; text-transform: uppercase;">May 15</div>
+                <div class="event-name" style="font-size: 14px; color: #333333; line-height: 1.4;">
                     
-                    <a href="https://variety.com/2026/tv/awards/fascism-emmy-contenders-storytelling-the-boys-1236749982/">Facing the Fascism: How This Season’s Emmy Contenders Pepper Storytelling With Real-World Perils</a>
-                    
-                </div>
-                
-                <div class="event-date">TBA</div>
-                <div class="event-name">
-                    
-                    <a href="https://variety.com/lists/2026-emmys-predictions/">Emmy Predictions: A Wide-Open Race Continues to Unfold With ‘The Pitt’ and ‘Hacks’ Still Holding Onto Early Leads</a>
+                    <a href="https://variety.com/2026/tv/awards/chad-powers-star-glen-powell-schedule-burnt-out-1236750250/" style="color: #333333; text-decoration: underline;">‘Chad Powers’ Star Glen Powell Is Everywhere, But He Promises He’s Not Burnt Out: ‘I Think People Are Worried About Me’</a>
                     
                 </div>
                 
-                <div class="event-date">TBA</div>
-                <div class="event-name">
+                <div class="event-date" style="font-weight: bold; font-size: 14px; color: #000000; text-transform: uppercase;">May 14</div>
+                <div class="event-name" style="font-size: 14px; color: #333333; line-height: 1.4;">
                     
-                    <a href="https://variety.com/2026/tv/news/bill-lawrence-project-healthy-minds-honor-1236748110/">Bill Lawrence to Be Honored As Project Healthy Minds Storyteller of the Year; Naeem Khan Named Artistic Curator (EXCLUSIVE)</a>
-                    
-                </div>
-                
-                <div class="event-date">Host 86</div>
-                <div class="event-name">
-                    
-                    <a href="https://variety.com/2026/tv/news/mo-amer-host-86th-annual-peabody-awards-1236746954/">Comedian Mo Amer to Host 86th Annual Peabody Awards</a>
+                    <a href="https://variety.com/2026/tv/news/bill-lawrence-project-healthy-minds-honor-1236748110/" style="color: #333333; text-decoration: underline;">Bill Lawrence to Be Honored As Project Healthy Minds Storyteller of the Year; Naeem Khan Named Artistic Curator (EXCLUSIVE)</a>
                     
                 </div>
                 
-                <div class="event-date">TBA</div>
-                <div class="event-name">
+                <div class="event-date" style="font-weight: bold; font-size: 14px; color: #000000; text-transform: uppercase;">May 13</div>
+                <div class="event-name" style="font-size: 14px; color: #333333; line-height: 1.4;">
                     
-                    <a href="https://variety.com/2026/tv/news/jason-priestley-ken-jeong-rockie-awards-gala-banff-1236747276/">Jason Priestley, Ken Jeong, Mae Martin, Tantoo Cardinal Named Rockie Awards Gala Honorees at This Year’s Banff World Media Festival</a>
-                    
-                </div>
-                
-                <div class="event-date">the 20</div>
-                <div class="event-name">
-                    
-                    <a href="https://variety.com/2026/tv/news/conan-obrien-host-2027-oscars-third-year-1236746181/">Conan O’Brien to Host the 2027 Oscars, Marking Third Consecutive Year</a>
+                    <a href="https://variety.com/2026/tv/news/mo-amer-host-86th-annual-peabody-awards-1236746954/" style="color: #333333; text-decoration: underline;">Comedian Mo Amer to Host 86th Annual Peabody Awards</a>
                     
                 </div>
                 
-                <div class="event-date">Mounts 19</div>
-                <div class="event-name">
+                <div class="event-date" style="font-weight: bold; font-size: 14px; color: #000000; text-transform: uppercase;">May 13</div>
+                <div class="event-name" style="font-size: 14px; color: #333333; line-height: 1.4;">
                     
-                    <a href="https://variety.com/2026/tv/awards/seth-macfarlane-ted-emmy-submissions-brennan-lee-mulligan-1236745927/">Seth MacFarlane Lands on Emmy Ballot Nine Times as Peacock Mounts 19-Category ‘Ted’ Push, With Brennan Lee Mulligan in Guest Comedy (EXCLUSIVE)</a>
+                    <a href="https://variety.com/2026/tv/news/jason-priestley-ken-jeong-rockie-awards-gala-banff-1236747276/" style="color: #333333; text-decoration: underline;">Jason Priestley, Ken Jeong, Mae Martin, Tantoo Cardinal Named Rockie Awards Gala Honorees at This Year’s Banff World Media Festival</a>
                     
                 </div>
                 
-                <div class="event-date">TBA</div>
-                <div class="event-name">
+                <div class="event-date" style="font-weight: bold; font-size: 14px; color: #000000; text-transform: uppercase;">May 12</div>
+                <div class="event-name" style="font-size: 14px; color: #333333; line-height: 1.4;">
                     
-                    <a href="https://variety.com/lists/2026-emmys-best-drama-series-predictions/">Emmy Predictions: Drama Series — Netflix, Apple TV and HBO Max Battle With Genre Shows Taking Center Stage</a>
+                    <a href="https://variety.com/2026/tv/news/conan-obrien-host-2027-oscars-third-year-1236746181/" style="color: #333333; text-decoration: underline;">Conan O’Brien to Host the 2027 Oscars, Marking Third Consecutive Year</a>
+                    
+                </div>
+                
+                <div class="event-date" style="font-weight: bold; font-size: 14px; color: #000000; text-transform: uppercase;">May 12</div>
+                <div class="event-name" style="font-size: 14px; color: #333333; line-height: 1.4;">
+                    
+                    <a href="https://variety.com/2026/tv/awards/seth-macfarlane-ted-emmy-submissions-brennan-lee-mulligan-1236745927/" style="color: #333333; text-decoration: underline;">Seth MacFarlane Lands on Emmy Ballot Nine Times as Peacock Mounts 19-Category ‘Ted’ Push, With Brennan Lee Mulligan in Guest Comedy (EXCLUSIVE)</a>
+                    
+                </div>
+                
+                <div class="event-date" style="font-weight: bold; font-size: 14px; color: #000000; text-transform: uppercase;">May 15</div>
+                <div class="event-name" style="font-size: 14px; color: #333333; line-height: 1.4;">
+                    
+                    <a href="https://wwd.com/sourcing-journal/logistics/port-of-long-beach-cargo-volumes-april-cyber-defense-operations-center-1238957333/" style="color: #333333; text-decoration: underline;">Long Beach Port Launches Cybersecurity Center as Cargo Volumes Cool</a>
+                    
+                </div>
+                
+                <div class="event-date" style="font-weight: bold; font-size: 14px; color: #000000; text-transform: uppercase;">May 15</div>
+                <div class="event-name" style="font-size: 14px; color: #333333; line-height: 1.4;">
+                    
+                    <a href="https://fashionista.com/2026/05/iris-van-herpen-sculpting-the-senses-exhibit-brooklyn-museum-review-interview" style="color: #333333; text-decoration: underline;">Iris Van Herpen's 'Sculpting the Senses' Exhibit Bridges Couture, Science and the Sublime</a>
                     
                 </div>
                 
             </div>
-            <p style="margin-top: 15px; font-size: 12px; color: #666; font-style: italic;">*Full 2026 Events Calendar</p>
+            <p style="margin-top: 15px; font-size: 12px; color: #666666; font-style: italic;">*Full 2026 Events Calendar</p>
         </div>
 
         <!-- Industry News -->
-        <div class="section">
-            <div class="section-header">
-                <h2>Industry News</h2>
-                <div class="line"></div>
+        <div class="section" style="padding: 30px; border-bottom: 1px solid #eeeeee;">
+            <div class="section-header" style="display: flex; align-items: center; margin-bottom: 20px;">
+                <h2 style="font-size: 18px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px; color: #000000; margin: 0;">Industry News</h2>
+                <div class="line" style="flex-grow: 1; height: 1px; background-color: #000000; margin-left: 15px;"></div>
             </div>
-            <ul class="news-list">
+            <ul class="news-list" style="list-style: none; margin: 0; padding: 0;">
                 
-                <li>
-                    <strong>Ken Jeong, Jason Priestley, Tantoo Cardinal, Mae Martin Set for Banff Fest Tributes</strong>: R. Scott Gemmill, Amy Harris, Aaron Zelman and Glenn Kessler will headline a showrunners panel in the Canadian Rockies to help chart where their industry is headed in the post-Peak TV era.
+                <li style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; line-height: 1.5;">
+                    <strong style="font-weight: bold; color: #000000;">Ken Jeong, Jason Priestley, Tantoo Cardinal, Mae Martin Set for Banff Fest Tributes</strong>: R. Scott Gemmill, Amy Harris, Aaron Zelman and Glenn Kessler will headline a showrunners panel in the Canadian Rockies to help chart where their industry is headed in the post-Peak TV era.
                     <br>
                     
-                    <a href="https://www.hollywoodreporter.com/tv/tv-news/jason-priestley-ken-jeong-banff-rockie-awards-honorees-1236593498/">Read more →</a>
+                    <a href="https://www.hollywoodreporter.com/tv/tv-news/jason-priestley-ken-jeong-banff-rockie-awards-honorees-1236593498/" style="color: #0066cc; text-decoration: underline; font-size: 12px;">Read more →</a>
                     
                     
-                    <span class="source-tag">THR Awards</span>
+                    <span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">THR Awards</span>
                     
                 </li>
                 
-                <li>
-                    <strong>Quinta Brunson Says Making 22 Episodes a Year of ‘Abbott Elementary’ Made Her Feel ‘Invincible’ as She Expands Into More TV and Film</strong>: As Quinta Brunson builds her own TV production company, she knows what she doesn’t want to make: “Slop.” In this age of AI, “slop” has become a term to describe the kind of mindless fare that has star...
+                <li style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; line-height: 1.5;">
+                    <strong style="font-weight: bold; color: #000000;">Grammys Set 2027 Ceremony, Nomination Dates</strong>: The biggest night in music will take place Feb. 7, 2027, while Grammy nominations will be revealed on Nov. 16
                     <br>
                     
-                    <a href="https://variety.com/2026/tv/news/quinta-brunson-abbott-elementary-new-tv-film-variety-fyc-fest-1236744239/">Read more →</a>
+                    <a href="https://www.hollywoodreporter.com/music/music-news/grammys-2027-key-dates-1236593600/" style="color: #0066cc; text-decoration: underline; font-size: 12px;">Read more →</a>
                     
                     
-                    <span class="source-tag">Variety Contenders</span>
+                    <span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">THR Awards</span>
                     
                 </li>
                 
-                <li>
-                    <strong>Michael Jordan’s Air Jordan 12 Gets a New ‘Bloodline’ Style Next Weekend — Here’s a Detailed Look</strong>: The anticipated pair is set for a May 23 launch.
+                <li style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; line-height: 1.5;">
+                    <strong style="font-weight: bold; color: #000000;">The Hollywood Reporter Nabs Mirror Awards Nomination</strong>: Steven Zeitchik’s ‘Last Call for Late Night’ lands a spot at the prestigious media-reporting prizes.
                     <br>
                     
-                    <a href="https://wwd.com/footwear-news/sneaker-news/air-jordan-12-retro-bloodline-ct8013-001-1238957530/">Read more →</a>
+                    <a href="https://www.hollywoodreporter.com/news/general-news/mirror-awards-nominees-the-hollywood-reporter-1236592619/" style="color: #0066cc; text-decoration: underline; font-size: 12px;">Read more →</a>
                     
                     
-                    <span class="source-tag">WWD</span>
+                    <span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">THR Awards</span>
                     
                 </li>
                 
-                <li>
-                    <strong>Taylor Swift Gives the Summer Mule a Romantic Turn for Date Night With Travis Kelce</strong>: She wore Aquazzura’s beige Twist 95 Sandal with a flora dress after leaning into sleeker black and crystal-covered silhouettes earlier in the week.
+                <li style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; line-height: 1.5;">
+                    <strong style="font-weight: bold; color: #000000;">Facing the Fascism: How This Season’s Emmy Contenders Pepper Storytelling With Real-World Perils</strong>: On this final season of Prime Video’s “The Boys,” Homelander — played by Antony Starr and described by showrunner Eric Kripke as “our sociopathic Superman” — decides he’s going to be the new God, and ...
                     <br>
                     
-                    <a href="https://wwd.com/footwear-news/shoe-trends/taylor-swift-aquazzura-twist-mules-travis-kelce-date-night-1238957546/">Read more →</a>
+                    <a href="https://variety.com/2026/tv/awards/fascism-emmy-contenders-storytelling-the-boys-1236749982/" style="color: #0066cc; text-decoration: underline; font-size: 12px;">Read more →</a>
                     
                     
-                    <span class="source-tag">WWD</span>
+                    <span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Variety Contenders</span>
                     
                 </li>
                 
-                <li>
-                    <strong>Michael Jordan’s Most Popular Air Jordan Is Getting a New International Makeover in 2027</strong>: The Air Jordan 4 takes inspiration from Berlin's coat of arms.
+                <li style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; line-height: 1.5;">
+                    <strong style="font-weight: bold; color: #000000;">Emmy Predictions: A Wide-Open Race Continues to Unfold With ‘The Pitt’ and ‘Hacks’ Still Holding Onto Early Leads</strong>: Variety&#160;Awards Circuit&#160;section is the home for all awards news and related content throughout the year, featuring the following: the official predictions for the upcoming Oscars,&#160;Emmys,...
                     <br>
                     
-                    <a href="https://wwd.com/footwear-news/sneaker-news/air-jordan-4-retro-berlin-2027-release-date-ja9635-001-1238957493/">Read more →</a>
+                    <a href="https://variety.com/lists/2026-emmys-predictions/" style="color: #0066cc; text-decoration: underline; font-size: 12px;">Read more →</a>
                     
                     
-                    <span class="source-tag">WWD</span>
+                    <span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Variety Contenders</span>
                     
                 </li>
                 
-                <li>
-                    <strong>The Cool-Girl Sunglasses Brand Quietly Taking Over This Season</strong>: From Gigi Hadid to Dua Lipa, this Parisian brand is fueling fashion’s return to oversized sunglasses.
+                <li style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; line-height: 1.5;">
+                    <strong style="font-weight: bold; color: #000000;">Quinta Brunson Says Making 22 Episodes a Year of ‘Abbott Elementary’ Made Her Feel ‘Invincible’ as She Expands Into More TV and Film</strong>: As Quinta Brunson builds her own TV production company, she knows what she doesn’t want to make: “Slop.” In this age of AI, “slop” has become a term to describe the kind of mindless fare that has star...
                     <br>
                     
-                    <a href="https://wwd.com/fashion-news/fashion-scoops/jimmy-fairly-oversized-sunglasses-1238957188/">Read more →</a>
+                    <a href="https://variety.com/2026/tv/news/quinta-brunson-abbott-elementary-new-tv-film-variety-fyc-fest-1236744239/" style="color: #0066cc; text-decoration: underline; font-size: 12px;">Read more →</a>
                     
                     
-                    <span class="source-tag">WWD</span>
+                    <span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Variety Contenders</span>
                     
                 </li>
                 
-                <li>
-                    <strong>Anthropologie Promotes Anu Narayanan to Global President, Women’s, Home and Retail</strong>: Most recently she had been president of women's and home.
+                <li style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; line-height: 1.5;">
+                    <strong style="font-weight: bold; color: #000000;">Michael Jordan’s Air Jordan 12 Gets a New ‘Bloodline’ Style Next Weekend — Here’s a Detailed Look</strong>: The anticipated pair is set for a May 23 launch.
                     <br>
                     
-                    <a href="https://wwd.com/business-news/retail/anthropologie-anu-narayanan-group-president-womens-home-retaiil-1238957273/">Read more →</a>
+                    <a href="https://wwd.com/footwear-news/sneaker-news/air-jordan-12-retro-bloodline-ct8013-001-1238957530/" style="color: #0066cc; text-decoration: underline; font-size: 12px;">Read more →</a>
                     
                     
-                    <span class="source-tag">WWD</span>
+                    <span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">WWD</span>
                     
                 </li>
                 
-                <li>
-                    <strong>On the Line: REI Union Boycotts Anniversary Sale</strong>: Also in this edition: A fire in Vietnam leaves workers' livelihoods in peril, Bangladesh signs a landmark development agreement and U.K modern slavery laws go under scrutiny.
+                <li style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; line-height: 1.5;">
+                    <strong style="font-weight: bold; color: #000000;">Taylor Swift Gives the Summer Mule a Romantic Turn for Date Night With Travis Kelce</strong>: She wore Aquazzura’s beige Twist 95 Sandal with a flora dress after leaning into sleeker black and crystal-covered silhouettes earlier in the week.
                     <br>
                     
-                    <a href="https://wwd.com/sourcing-journal/sustainability/on-the-line-rei-union-vietnam-fire-bgmea-giz-1238957277/">Read more →</a>
+                    <a href="https://wwd.com/footwear-news/shoe-trends/taylor-swift-aquazzura-twist-mules-travis-kelce-date-night-1238957546/" style="color: #0066cc; text-decoration: underline; font-size: 12px;">Read more →</a>
                     
                     
-                    <span class="source-tag">WWD</span>
+                    <span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">WWD</span>
                     
                 </li>
                 
-                <li>
-                    <strong>Selena Gomez Embraces the Satin Heels Trend in London</strong>: Gomez’s shoes featured a pointed-toe silhouette.
+                <li style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; line-height: 1.5;">
+                    <strong style="font-weight: bold; color: #000000;">Michael Jordan’s Most Popular Air Jordan Is Getting a New International Makeover in 2027</strong>: The Air Jordan 4 takes inspiration from Berlin's coat of arms.
                     <br>
                     
-                    <a href="https://wwd.com/footwear-news/shoe-trends/selena-gomez-satin-heels-london-cult-gaia-dress-1238957202/">Read more →</a>
+                    <a href="https://wwd.com/footwear-news/sneaker-news/air-jordan-4-retro-berlin-2027-release-date-ja9635-001-1238957493/" style="color: #0066cc; text-decoration: underline; font-size: 12px;">Read more →</a>
                     
                     
-                    <span class="source-tag">WWD</span>
+                    <span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">WWD</span>
                     
                 </li>
                 
-                <li>
-                    <strong>The French Twist Finds Modern Allure Ahead of Wedding Season</strong>: WWD speaks with Dyson Beauty global styling ambassador Matthew Collins to decode the dignified hairdo.
+                <li style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; line-height: 1.5;">
+                    <strong style="font-weight: bold; color: #000000;">The Cool-Girl Sunglasses Brand Quietly Taking Over This Season</strong>: From Gigi Hadid to Dua Lipa, this Parisian brand is fueling fashion’s return to oversized sunglasses.
                     <br>
                     
-                    <a href="https://wwd.com/pop-culture/culture-news/aja-naomi-king-french-twist-1238956992/">Read more →</a>
+                    <a href="https://wwd.com/fashion-news/fashion-scoops/jimmy-fairly-oversized-sunglasses-1238957188/" style="color: #0066cc; text-decoration: underline; font-size: 12px;">Read more →</a>
                     
                     
-                    <span class="source-tag">WWD</span>
+                    <span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">WWD</span>
                     
                 </li>
                 
-                <li>
-                    <strong>ICYMI: LVMH Sells Marc Jacobs, How Ciara Miller Shops & Inside Sundae School's New Chinatown Store</strong>: A must-read roundup of our most popular stories of the week.
+                <li style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; line-height: 1.5;">
+                    <strong style="font-weight: bold; color: #000000;">Anthropologie Promotes Anu Narayanan to Global President, Women’s, Home and Retail</strong>: Most recently she had been president of women's and home.
                     <br>
                     
-                    <a href="https://fashionista.com/2026/05/fashion-news-you-need-to-know-may-16">Read more →</a>
+                    <a href="https://wwd.com/business-news/retail/anthropologie-anu-narayanan-group-president-womens-home-retaiil-1238957273/" style="color: #0066cc; text-decoration: underline; font-size: 12px;">Read more →</a>
                     
                     
-                    <span class="source-tag">Fashionista</span>
+                    <span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">WWD</span>
                     
                 </li>
                 
-                <li>
-                    <strong>Here Are All the Looks From Pratt Institute's 2026 Runway Show</strong>: Students were required to meet a minimum of 20% responsibly or sustainably sourced resources within their collections.
+                <li style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; line-height: 1.5;">
+                    <strong style="font-weight: bold; color: #000000;">On the Line: REI Union Boycotts Anniversary Sale</strong>: Also in this edition: A fire in Vietnam leaves workers' livelihoods in peril, Bangladesh signs a landmark development agreement and U.K modern slavery laws go under scrutiny.
                     <br>
                     
-                    <a href="https://fashionista.com/2026/05/pratt-institute-2026-student-fashion-show">Read more →</a>
+                    <a href="https://wwd.com/sourcing-journal/sustainability/on-the-line-rei-union-vietnam-fire-bgmea-giz-1238957277/" style="color: #0066cc; text-decoration: underline; font-size: 12px;">Read more →</a>
                     
                     
-                    <span class="source-tag">Fashionista</span>
+                    <span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">WWD</span>
                     
                 </li>
                 
@@ -602,145 +310,145 @@
         </div>
 
         <!-- Ambassador Announcements -->
-        <div class="section">
-            <div class="section-header">
-                <h2>Ambassador Announcements & Campaign Stars</h2>
-                <div class="line"></div>
+        <div class="section" style="padding: 30px; border-bottom: 1px solid #eeeeee;">
+            <div class="section-header" style="display: flex; align-items: center; margin-bottom: 20px;">
+                <h2 style="font-size: 18px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px; color: #000000; margin: 0;">Ambassador Announcements & Campaign Stars</h2>
+                <div class="line" style="flex-grow: 1; height: 1px; background-color: #000000; margin-left: 15px;"></div>
             </div>
-            <div class="ambassador-grid">
+            <div class="ambassador-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                 
-                <div class="ambassador-item">
+                <div class="ambassador-item" style="padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f0f0f0;">
                     
-                    <a href="https://wwd.com/pop-culture/celebrity-news/julia-fox-ebay-looksmaxxing-shoplifting-plastic-surgery-1238957163/"><strong>Julia Fox Talks Stoop Sale, Plastic Surgery, Looks</strong> for New Campaign</a>
+                    <a href="https://variety.com/lists/2026-emmys-best-drama-series-predictions/" style="color: #333333; text-decoration: underline;"><strong style="font-weight: bold;">Emmy Predictions: Drama Series — Netflix, Apple TV</strong> for New Campaign</a>
                     
                     
-                    <br><span class="source-tag">WWD</span>
+                    <br><span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Variety Contenders</span>
                     
                 </div>
                 
-                <div class="ambassador-item">
+                <div class="ambassador-item" style="padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f0f0f0;">
                     
-                    <a href="https://fashionista.com/2026/05/best-fashion-beauty-launches-collabs-may-15"><strong>Weekly Drop Watch: Cuup x Éliou, Dedcool x Brookli</strong> for New Campaign</a>
-                    
-                    
-                    <br><span class="source-tag">Fashionista</span>
-                    
-                </div>
-                
-                <div class="ambassador-item">
-                    
-                    <a href="https://fashionista.com/2026/05/peixoto-resortwear-swim-brand"><strong>Peixoto: A Bella Hadid-Approved Resortwear Brand</strong> for New Campaign</a>
+                    <a href="https://wwd.com/pop-culture/celebrity-news/julia-fox-ebay-looksmaxxing-shoplifting-plastic-surgery-1238957163/" style="color: #333333; text-decoration: underline;"><strong style="font-weight: bold;">Julia Fox Talks Stoop Sale, Plastic Surgery, Looks</strong> for New Campaign</a>
                     
                     
-                    <br><span class="source-tag">Fashionista</span>
+                    <br><span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">WWD</span>
                     
                 </div>
                 
-                <div class="ambassador-item">
+                <div class="ambassador-item" style="padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f0f0f0;">
                     
-                    <a href="https://www.vogue.fr/article/sienna-spiro-robe-femmes-concert-mode"><strong>En tournée, Sienna Spiro porte une robe hommage au</strong> for New Campaign</a>
-                    
-                    
-                    <br><span class="source-tag">Vogue France</span>
-                    
-                </div>
-                
-                <div class="ambassador-item">
-                    
-                    <a href="https://www.vogue.fr/article/collaborations-sneakers-printemps-ete-2026-mode"><strong>JW Anderson x Diadora : ces sneakers sont les bask</strong> for New Campaign</a>
+                    <a href="https://fashionista.com/2026/05/best-fashion-beauty-launches-collabs-may-15" style="color: #333333; text-decoration: underline;"><strong style="font-weight: bold;">Weekly Drop Watch: Cuup x Éliou, Dedcool x Brookli</strong> for New Campaign</a>
                     
                     
-                    <br><span class="source-tag">Vogue France</span>
+                    <br><span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Fashionista</span>
                     
                 </div>
                 
-                <div class="ambassador-item">
+                <div class="ambassador-item" style="padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f0f0f0;">
                     
-                    <a href="https://www.vogue.fr/article/inspiration-invitee-mariage-robes-vintage"><strong>4 styles de robes vintage à porter pour un mariage</strong> for New Campaign</a>
-                    
-                    
-                    <br><span class="source-tag">Vogue France</span>
-                    
-                </div>
-                
-                <div class="ambassador-item">
-                    
-                    <a href="https://www.vogue.fr/mode/article/pieces-mode-moins-de-300-euros"><strong>Mode printemps : Les pièces à moins de 300 euros a</strong> for New Campaign</a>
+                    <a href="https://fashionista.com/2026/05/peixoto-resortwear-swim-brand" style="color: #333333; text-decoration: underline;"><strong style="font-weight: bold;">Peixoto: A Bella Hadid-Approved Resortwear Brand</strong> for New Campaign</a>
                     
                     
-                    <br><span class="source-tag">Vogue France</span>
+                    <br><span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Fashionista</span>
                     
                 </div>
                 
-                <div class="ambassador-item">
+                <div class="ambassador-item" style="padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f0f0f0;">
                     
-                    <a href="https://www.vogue.fr/astro/article/nouvelle-lune-voeux"><strong>Comment manifester ses voeux de Nouvelle Lune ce w</strong> for New Campaign</a>
-                    
-                    
-                    <br><span class="source-tag">Vogue France</span>
-                    
-                </div>
-                
-                <div class="ambassador-item">
-                    
-                    <a href="https://www.drapersonline.com/news/ms-to-update-on-profits-and-cyber-attack-recovery"><strong>M&S to update on profits and cyber-attack recovery</strong> for New Campaign</a>
+                    <a href="https://www.vogue.fr/article/sienna-spiro-robe-femmes-concert-mode" style="color: #333333; text-decoration: underline;"><strong style="font-weight: bold;">En tournée, Sienna Spiro porte une robe hommage au</strong> for New Campaign</a>
                     
                     
-                    <br><span class="source-tag">Drapers</span>
+                    <br><span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Vogue France</span>
                     
                 </div>
                 
-                <div class="ambassador-item">
+                <div class="ambassador-item" style="padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f0f0f0;">
                     
-                    <a href="https://www.drapersonline.com/insight/comment/how-zalando-is-using-ai-to-reshape-fashion-content"><strong>How Zalando is using AI to reshape fashion content</strong> for New Campaign</a>
-                    
-                    
-                    <br><span class="source-tag">Drapers</span>
-                    
-                </div>
-                
-                <div class="ambassador-item">
-                    
-                    <a href="https://www.drapersonline.com/topics/digital-and-tech/how-is-fashion-retail-harnessing-performance-marketing"><strong>How is fashion retail harnessing performance marke</strong> for New Campaign</a>
+                    <a href="https://www.vogue.fr/article/collaborations-sneakers-printemps-ete-2026-mode" style="color: #333333; text-decoration: underline;"><strong style="font-weight: bold;">JW Anderson x Diadora : ces sneakers sont les bask</strong> for New Campaign</a>
                     
                     
-                    <br><span class="source-tag">Drapers</span>
+                    <br><span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Vogue France</span>
                     
                 </div>
                 
-                <div class="ambassador-item">
+                <div class="ambassador-item" style="padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f0f0f0;">
                     
-                    <a href="https://www.elle.com/fashion/shopping/a71283427/white-maxi-skirt-outfits-2026/"><strong>White Maxi Skirts Are the Unsung Hero of Summer Dr</strong> for New Campaign</a>
-                    
-                    
-                    <br><span class="source-tag">Elle Fashion</span>
-                    
-                </div>
-                
-                <div class="ambassador-item">
-                    
-                    <a href="https://www.elle.com/fashion/celebrity-style/a71281911/meghan-markle-as-ever-video-style/"><strong>Meghan Markle Showcases Her Chicest ‘Rich Mom’ Loo</strong> for New Campaign</a>
+                    <a href="https://www.vogue.fr/article/inspiration-invitee-mariage-robes-vintage" style="color: #333333; text-decoration: underline;"><strong style="font-weight: bold;">4 styles de robes vintage à porter pour un mariage</strong> for New Campaign</a>
                     
                     
-                    <br><span class="source-tag">Elle Fashion</span>
+                    <br><span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Vogue France</span>
                     
                 </div>
                 
-                <div class="ambassador-item">
+                <div class="ambassador-item" style="padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f0f0f0;">
                     
-                    <a href="https://deadline.com/2026/05/james-cameron-update-avatar-films-still-floating-out-there-1236907336/"><strong>James Cameron Gives Update On Next Two ‘Avatar’ Fi</strong> for New Campaign</a>
+                    <a href="https://www.vogue.fr/mode/article/pieces-mode-moins-de-300-euros" style="color: #333333; text-decoration: underline;"><strong style="font-weight: bold;">Mode printemps : Les pièces à moins de 300 euros a</strong> for New Campaign</a>
                     
                     
-                    <br><span class="source-tag">Deadline</span>
+                    <br><span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Vogue France</span>
                     
                 </div>
                 
-                <div class="ambassador-item">
+                <div class="ambassador-item" style="padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f0f0f0;">
                     
-                    <a href="https://deadline.com/2026/05/mark-ruffalo-on-list-paramount-wbd-vindictive-motherfckers-1236907295/"><strong>Mark Ruffalo Assumes “I’m Already On A List” For O</strong> for New Campaign</a>
+                    <a href="https://www.vogue.fr/astro/article/nouvelle-lune-voeux" style="color: #333333; text-decoration: underline;"><strong style="font-weight: bold;">Comment manifester ses voeux de Nouvelle Lune ce w</strong> for New Campaign</a>
                     
                     
-                    <br><span class="source-tag">Deadline</span>
+                    <br><span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Vogue France</span>
+                    
+                </div>
+                
+                <div class="ambassador-item" style="padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f0f0f0;">
+                    
+                    <a href="https://www.drapersonline.com/news/ms-to-update-on-profits-and-cyber-attack-recovery" style="color: #333333; text-decoration: underline;"><strong style="font-weight: bold;">M&S to update on profits and cyber-attack recovery</strong> for New Campaign</a>
+                    
+                    
+                    <br><span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Drapers</span>
+                    
+                </div>
+                
+                <div class="ambassador-item" style="padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f0f0f0;">
+                    
+                    <a href="https://www.drapersonline.com/insight/comment/how-zalando-is-using-ai-to-reshape-fashion-content" style="color: #333333; text-decoration: underline;"><strong style="font-weight: bold;">How Zalando is using AI to reshape fashion content</strong> for New Campaign</a>
+                    
+                    
+                    <br><span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Drapers</span>
+                    
+                </div>
+                
+                <div class="ambassador-item" style="padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f0f0f0;">
+                    
+                    <a href="https://www.drapersonline.com/topics/digital-and-tech/how-is-fashion-retail-harnessing-performance-marketing" style="color: #333333; text-decoration: underline;"><strong style="font-weight: bold;">How is fashion retail harnessing performance marke</strong> for New Campaign</a>
+                    
+                    
+                    <br><span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Drapers</span>
+                    
+                </div>
+                
+                <div class="ambassador-item" style="padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f0f0f0;">
+                    
+                    <a href="https://www.elle.com/fashion/shopping/a71283427/white-maxi-skirt-outfits-2026/" style="color: #333333; text-decoration: underline;"><strong style="font-weight: bold;">White Maxi Skirts Are the Unsung Hero of Summer Dr</strong> for New Campaign</a>
+                    
+                    
+                    <br><span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Elle Fashion</span>
+                    
+                </div>
+                
+                <div class="ambassador-item" style="padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f0f0f0;">
+                    
+                    <a href="https://www.elle.com/fashion/celebrity-style/a71281911/meghan-markle-as-ever-video-style/" style="color: #333333; text-decoration: underline;"><strong style="font-weight: bold;">Meghan Markle Showcases Her Chicest ‘Rich Mom’ Loo</strong> for New Campaign</a>
+                    
+                    
+                    <br><span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Elle Fashion</span>
+                    
+                </div>
+                
+                <div class="ambassador-item" style="padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f0f0f0;">
+                    
+                    <a href="https://deadline.com/2026/05/james-cameron-update-avatar-films-still-floating-out-there-1236907336/" style="color: #333333; text-decoration: underline;"><strong style="font-weight: bold;">James Cameron Gives Update On Next Two ‘Avatar’ Fi</strong> for New Campaign</a>
+                    
+                    
+                    <br><span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Deadline</span>
                     
                 </div>
                 
@@ -748,118 +456,118 @@
         </div>
 
         <!-- Brand Partnerships -->
-        <div class="section">
-            <div class="section-header">
-                <h2>Brand Partnerships</h2>
-                <div class="line"></div>
+        <div class="section" style="padding: 30px; border-bottom: 1px solid #eeeeee;">
+            <div class="section-header" style="display: flex; align-items: center; margin-bottom: 20px;">
+                <h2 style="font-size: 18px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px; color: #000000; margin: 0;">Brand Partnerships</h2>
+                <div class="line" style="flex-grow: 1; height: 1px; background-color: #000000; margin-left: 15px;"></div>
             </div>
-            <ul class="partnership-list">
+            <ul class="partnership-list" style="list-style: none; margin: 0; padding: 0;">
                 
-                <li>
+                <li style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; line-height: 1.5;">
                     
-                    <a href="https://wwd.com/pop-culture/celebrity-news/julia-fox-ebay-looksmaxxing-shoplifting-plastic-surgery-1238957163/"><strong>Julia Fox Talks Stoop Sale, Plastic Surg</strong> x <strong>Collaboration</strong></a>
+                    <a href="https://wwd.com/pop-culture/celebrity-news/julia-fox-ebay-looksmaxxing-shoplifting-plastic-surgery-1238957163/" style="color: #333333; text-decoration: underline;"><strong style="font-weight: bold;">Julia Fox Talks Stoop Sale, Plastic Surg</strong> x <strong style="font-weight: bold;">Collaboration</strong></a>
                     
                     
-                    <br><span class="source-tag">WWD</span>
+                    <br><span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">WWD</span>
                     
                 </li>
                 
-                <li>
+                <li style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; line-height: 1.5;">
                     
-                    <a href="https://fashionista.com/2026/05/best-fashion-beauty-launches-collabs-may-15"><strong>Weekly Drop Watch: Cuup</strong> x <strong>Éliou, Dedcool x Brooklinen, Collina Strada x Stand Oil and More</strong></a>
-                    
-                    
-                    <br><span class="source-tag">Fashionista</span>
-                    
-                </li>
-                
-                <li>
-                    
-                    <a href="https://fashionista.com/2026/05/peixoto-resortwear-swim-brand"><strong>Peixoto: A Bella Hadid-Approved Resortwe</strong> x <strong>Collaboration</strong></a>
+                    <a href="https://fashionista.com/2026/05/best-fashion-beauty-launches-collabs-may-15" style="color: #333333; text-decoration: underline;"><strong style="font-weight: bold;">Weekly Drop Watch: Cuup</strong> x <strong style="font-weight: bold;">Éliou, Dedcool x Brooklinen, Collina Strada x Stand Oil and More</strong></a>
                     
                     
-                    <br><span class="source-tag">Fashionista</span>
+                    <br><span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Fashionista</span>
                     
                 </li>
                 
-                <li>
+                <li style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; line-height: 1.5;">
                     
-                    <a href="https://www.popsugar.com/fashion/met-gala-red-carpet-49477599"><strong>Lisa Wore an Under-$100 Bra Top to the M</strong> x <strong>Collaboration</strong></a>
-                    
-                    
-                    <br><span class="source-tag">POPSUGAR Fashion</span>
-                    
-                </li>
-                
-                <li>
-                    
-                    <a href="https://www.vogue.fr/article/sienna-spiro-robe-femmes-concert-mode"><strong>En tournée, Sienna Spiro porte une robe </strong> x <strong>Collaboration</strong></a>
+                    <a href="https://fashionista.com/2026/05/peixoto-resortwear-swim-brand" style="color: #333333; text-decoration: underline;"><strong style="font-weight: bold;">Peixoto: A Bella Hadid-Approved Resortwe</strong> x <strong style="font-weight: bold;">Collaboration</strong></a>
                     
                     
-                    <br><span class="source-tag">Vogue France</span>
+                    <br><span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Fashionista</span>
                     
                 </li>
                 
-                <li>
+                <li style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; line-height: 1.5;">
                     
-                    <a href="https://www.vogue.fr/article/collaborations-sneakers-printemps-ete-2026-mode"><strong>JW Anderson</strong> x <strong>Diadora : ces sneakers sont les baskets stars de l'été 2026</strong></a>
-                    
-                    
-                    <br><span class="source-tag">Vogue France</span>
-                    
-                </li>
-                
-                <li>
-                    
-                    <a href="https://www.vogue.fr/article/inspiration-invitee-mariage-robes-vintage"><strong>4 styles de robes vintage à porter pour </strong> x <strong>Collaboration</strong></a>
+                    <a href="https://www.popsugar.com/fashion/met-gala-red-carpet-49477599" style="color: #333333; text-decoration: underline;"><strong style="font-weight: bold;">Lisa Wore an Under-$100 Bra Top to the M</strong> x <strong style="font-weight: bold;">Collaboration</strong></a>
                     
                     
-                    <br><span class="source-tag">Vogue France</span>
+                    <br><span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">POPSUGAR Fashion</span>
                     
                 </li>
                 
-                <li>
+                <li style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; line-height: 1.5;">
                     
-                    <a href="https://www.vogue.fr/mode/article/pieces-mode-moins-de-300-euros"><strong>Mode printemps : Les pièces à moins de 3</strong> x <strong>Collaboration</strong></a>
-                    
-                    
-                    <br><span class="source-tag">Vogue France</span>
-                    
-                </li>
-                
-                <li>
-                    
-                    <a href="https://www.vogue.fr/astro/article/nouvelle-lune-voeux"><strong>Comment manifester ses voeux de Nouvelle</strong> x <strong>Collaboration</strong></a>
+                    <a href="https://www.vogue.fr/article/sienna-spiro-robe-femmes-concert-mode" style="color: #333333; text-decoration: underline;"><strong style="font-weight: bold;">En tournée, Sienna Spiro porte une robe </strong> x <strong style="font-weight: bold;">Collaboration</strong></a>
                     
                     
-                    <br><span class="source-tag">Vogue France</span>
+                    <br><span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Vogue France</span>
                     
                 </li>
                 
-                <li>
+                <li style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; line-height: 1.5;">
                     
-                    <a href="https://wwd.com/pop-culture/celebrity-news/julia-fox-ebay-looksmaxxing-shoplifting-plastic-surgery-1238957163/"><strong>Julia Fox Talks Stoop Sale, Plastic Surg</strong> x <strong>Collaboration</strong></a>
-                    
-                    
-                    <br><span class="source-tag">WWD</span>
-                    
-                </li>
-                
-                <li>
-                    
-                    <a href="https://fashionista.com/2026/05/best-fashion-beauty-launches-collabs-may-15"><strong>Weekly Drop Watch: Cuup</strong> x <strong>Éliou, Dedcool x Brooklinen, Collina Strada x Stand Oil and More</strong></a>
+                    <a href="https://www.vogue.fr/article/collaborations-sneakers-printemps-ete-2026-mode" style="color: #333333; text-decoration: underline;"><strong style="font-weight: bold;">JW Anderson</strong> x <strong style="font-weight: bold;">Diadora : ces sneakers sont les baskets stars de l'été 2026</strong></a>
                     
                     
-                    <br><span class="source-tag">Fashionista</span>
+                    <br><span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Vogue France</span>
                     
                 </li>
                 
-                <li>
+                <li style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; line-height: 1.5;">
                     
-                    <a href="https://fashionista.com/2026/05/peixoto-resortwear-swim-brand"><strong>Peixoto: A Bella Hadid-Approved Resortwe</strong> x <strong>Collaboration</strong></a>
+                    <a href="https://www.vogue.fr/article/inspiration-invitee-mariage-robes-vintage" style="color: #333333; text-decoration: underline;"><strong style="font-weight: bold;">4 styles de robes vintage à porter pour </strong> x <strong style="font-weight: bold;">Collaboration</strong></a>
                     
                     
-                    <br><span class="source-tag">Fashionista</span>
+                    <br><span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Vogue France</span>
+                    
+                </li>
+                
+                <li style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; line-height: 1.5;">
+                    
+                    <a href="https://www.vogue.fr/mode/article/pieces-mode-moins-de-300-euros" style="color: #333333; text-decoration: underline;"><strong style="font-weight: bold;">Mode printemps : Les pièces à moins de 3</strong> x <strong style="font-weight: bold;">Collaboration</strong></a>
+                    
+                    
+                    <br><span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Vogue France</span>
+                    
+                </li>
+                
+                <li style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; line-height: 1.5;">
+                    
+                    <a href="https://www.vogue.fr/astro/article/nouvelle-lune-voeux" style="color: #333333; text-decoration: underline;"><strong style="font-weight: bold;">Comment manifester ses voeux de Nouvelle</strong> x <strong style="font-weight: bold;">Collaboration</strong></a>
+                    
+                    
+                    <br><span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Vogue France</span>
+                    
+                </li>
+                
+                <li style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; line-height: 1.5;">
+                    
+                    <a href="https://wwd.com/pop-culture/celebrity-news/julia-fox-ebay-looksmaxxing-shoplifting-plastic-surgery-1238957163/" style="color: #333333; text-decoration: underline;"><strong style="font-weight: bold;">Julia Fox Talks Stoop Sale, Plastic Surg</strong> x <strong style="font-weight: bold;">Collaboration</strong></a>
+                    
+                    
+                    <br><span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">WWD</span>
+                    
+                </li>
+                
+                <li style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; line-height: 1.5;">
+                    
+                    <a href="https://fashionista.com/2026/05/best-fashion-beauty-launches-collabs-may-15" style="color: #333333; text-decoration: underline;"><strong style="font-weight: bold;">Weekly Drop Watch: Cuup</strong> x <strong style="font-weight: bold;">Éliou, Dedcool x Brooklinen, Collina Strada x Stand Oil and More</strong></a>
+                    
+                    
+                    <br><span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Fashionista</span>
+                    
+                </li>
+                
+                <li style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; line-height: 1.5;">
+                    
+                    <a href="https://fashionista.com/2026/05/peixoto-resortwear-swim-brand" style="color: #333333; text-decoration: underline;"><strong style="font-weight: bold;">Peixoto: A Bella Hadid-Approved Resortwe</strong> x <strong style="font-weight: bold;">Collaboration</strong></a>
+                    
+                    
+                    <br><span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">Fashionista</span>
                     
                 </li>
                 
@@ -867,51 +575,51 @@
         </div>
 
         <!-- Ones to Watch / Key Castings -->
-        <div class="section">
-            <div class="section-header">
-                <h2>Ones to Watch / Key Castings</h2>
-                <div class="line"></div>
+        <div class="section" style="padding: 30px; border-bottom: 1px solid #eeeeee;">
+            <div class="section-header" style="display: flex; align-items: center; margin-bottom: 20px;">
+                <h2 style="font-size: 18px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px; color: #000000; margin: 0;">Ones to Watch / Key Castings</h2>
+                <div class="line" style="flex-grow: 1; height: 1px; background-color: #000000; margin-left: 15px;"></div>
             </div>
-            <ul class="casting-list">
+            <ul class="casting-list" style="list-style: none; margin: 0; padding: 0;">
                 
             </ul>
         </div>
 
         <!-- Talent with Upcoming Projects -->
-        <div class="section">
-            <div class="section-header">
-                <h2>Talent with Upcoming Projects</h2>
-                <div class="line"></div>
+        <div class="section" style="padding: 30px; border-bottom: 1px solid #eeeeee;">
+            <div class="section-header" style="display: flex; align-items: center; margin-bottom: 20px;">
+                <h2 style="font-size: 18px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px; color: #000000; margin: 0;">Talent with Upcoming Projects</h2>
+                <div class="line" style="flex-grow: 1; height: 1px; background-color: #000000; margin-left: 15px;"></div>
             </div>
 
-            <div class="projects-category">
-                <h3>Films</h3>
-                <ul class="projects-list">
+            <div class="projects-category" style="margin-bottom: 20px;">
+                <h3 style="font-size: 13px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px; color: #666666; margin: 0 0 10px 0; padding-bottom: 5px; border-bottom: 2px solid #000000; display: inline-block;">Films</h3>
+                <ul class="projects-list" style="list-style: none; margin: 0; padding: 0;">
                     
                 </ul>
             </div>
 
-            <div class="projects-category">
-                <h3>TV</h3>
-                <ul class="projects-list">
+            <div class="projects-category" style="margin-bottom: 20px;">
+                <h3 style="font-size: 13px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px; color: #666666; margin: 0 0 10px 0; padding-bottom: 5px; border-bottom: 2px solid #000000; display: inline-block;">TV</h3>
+                <ul class="projects-list" style="list-style: none; margin: 0; padding: 0;">
                     
                 </ul>
             </div>
         </div>
 
         <!-- Footer -->
-        <div class="footer">
-            <div class="signature">Best,</div>
-            <div class="signature" style="margin-top: 10px;">Maxime Bicard</div>
-            <div class="title">Senior Director</div>
-            <div class="company">MB Consulting</div>
-            <div class="contact">
+        <div class="footer" style="background-color: #000000; color: #ffffff; padding: 40px 30px; text-align: center;">
+            <div class="signature" style="font-size: 16px; font-weight: bold; margin-bottom: 5px;">Best,</div>
+            <div class="signature" style="font-size: 16px; font-weight: bold; margin-top: 10px; margin-bottom: 5px;">Maxime Bicard</div>
+            <div class="title" style="font-size: 13px; color: #aaaaaa; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px;">Senior Director</div>
+            <div class="company" style="font-size: 14px; font-weight: bold; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px;">MB Consulting</div>
+            <div class="contact" style="font-size: 13px; color: #aaaaaa; line-height: 1.8;">
                 129 rue Lamarck, 75018 Paris<br>
-                <a href="mailto:maximebicard@tuta.io">maximebicard@tuta.io</a><br>
+                <a href="mailto:maximebicard@tuta.io" style="color: #ffffff; text-decoration: underline;">maximebicard@tuta.io</a><br>
                 +33 6 77 58 24 60<br>
-                <a href="https://www.linkedin.com/in/maximebicard/">https://www.linkedin.com/in/maximebicard/</a>
+                <a href="https://www.linkedin.com/in/maximebicard/" style="color: #ffffff; text-decoration: underline;">https://www.linkedin.com/in/maximebicard/</a>
             </div>
-            <a href="#" class="cta-button">View Full Events Calendar</a>
+            <a href="#" class="cta-button" style="display: inline-block; margin-top: 20px; padding: 12px 30px; background-color: #ffffff; color: #000000; text-decoration: none; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px;">View Full Events Calendar</a>
         </div>
     </div>
 </body>
