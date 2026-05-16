@@ -1,0 +1,374 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>VIP & Industry News</title>
+    <style>
+        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f5f5f5;
+            color: #1a1a1a;
+            line-height: 1.6;
+        }
+
+        .email-wrapper {
+            max-width: 680px;
+            margin: 0 auto;
+            background-color: #ffffff;
+        }
+
+        .header {
+            background-color: #000000;
+            color: #ffffff;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 28px;
+            font-weight: 700;
+            letter-spacing: 2px;
+            text-transform: uppercase;
+            margin-bottom: 8px;
+        }
+
+        .header .subtitle {
+            font-size: 14px;
+            font-weight: 300;
+            letter-spacing: 3px;
+            text-transform: uppercase;
+            color: #cccccc;
+        }
+
+        .intro {
+            padding: 30px;
+            background-color: #fafafa;
+            border-bottom: 1px solid #eeeeee;
+        }
+
+        .intro p {
+            font-size: 15px;
+            color: #444444;
+            font-weight: 400;
+        }
+
+        .section {
+            padding: 30px;
+            border-bottom: 1px solid #eeeeee;
+        }
+
+        .section:last-child {
+            border-bottom: none;
+        }
+
+        .section-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 20px;
+        }
+
+        .section-header h2 {
+            font-size: 18px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #000000;
+        }
+
+        .section-header .line {
+            flex-grow: 1;
+            height: 1px;
+            background-color: #000000;
+            margin-left: 15px;
+        }
+
+        .events-grid {
+            display: grid;
+            grid-template-columns: 80px 1fr;
+            gap: 12px 20px;
+        }
+
+        .event-date {
+            font-weight: 600;
+            font-size: 14px;
+            color: #000000;
+            text-transform: uppercase;
+        }
+
+        .event-name {
+            font-size: 14px;
+            color: #333333;
+        }
+
+        .news-list, .partnership-list, .casting-list, .projects-list {
+            list-style: none;
+        }
+
+        .news-list li, .partnership-list li, .casting-list li {
+            padding: 10px 0;
+            border-bottom: 1px solid #f0f0f0;
+            font-size: 14px;
+            line-height: 1.5;
+        }
+
+        .news-list li:last-child, .partnership-list li:last-child, .casting-list li:last-child {
+            border-bottom: none;
+        }
+
+        .news-list li strong, .partnership-list li strong, .casting-list li strong {
+            font-weight: 600;
+            color: #000000;
+        }
+
+        .ambassador-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 12px;
+        }
+
+        .ambassador-item {
+            padding: 8px 0;
+            font-size: 14px;
+            border-bottom: 1px solid #f0f0f0;
+        }
+
+        .ambassador-item strong {
+            font-weight: 600;
+        }
+
+        .projects-category {
+            margin-bottom: 20px;
+        }
+
+        .projects-category h3 {
+            font-size: 13px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            color: #666666;
+            margin-bottom: 10px;
+            padding-bottom: 5px;
+            border-bottom: 2px solid #000000;
+            display: inline-block;
+        }
+
+        .projects-list li {
+            padding: 6px 0;
+            font-size: 14px;
+        }
+
+        .projects-list li strong {
+            font-weight: 600;
+        }
+
+        .footer {
+            background-color: #000000;
+            color: #ffffff;
+            padding: 40px 30px;
+            text-align: center;
+        }
+
+        .footer .signature {
+            font-size: 16px;
+            font-weight: 600;
+            margin-bottom: 5px;
+        }
+
+        .footer .title {
+            font-size: 13px;
+            color: #aaaaaa;
+            margin-bottom: 20px;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+        }
+
+        .footer .company {
+            font-size: 14px;
+            font-weight: 700;
+            margin-bottom: 15px;
+            text-transform: uppercase;
+            letter-spacing: 2px;
+        }
+
+        .footer .contact {
+            font-size: 13px;
+            color: #aaaaaa;
+            line-height: 1.8;
+        }
+
+        .footer .contact a {
+            color: #ffffff;
+            text-decoration: none;
+        }
+
+        .cta-button {
+            display: inline-block;
+            margin-top: 20px;
+            padding: 12px 30px;
+            background-color: #ffffff;
+            color: #000000;
+            text-decoration: none;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 1.5px;
+            border-radius: 0;
+        }
+
+        @media screen and (max-width: 600px) {
+            .ambassador-grid {
+                grid-template-columns: 1fr;
+            }
+
+            .events-grid {
+                grid-template-columns: 1fr;
+                gap: 4px 0;
+            }
+
+            .event-date {
+                margin-top: 10px;
+            }
+
+            .section {
+                padding: 20px;
+            }
+
+            .header h1 {
+                font-size: 22px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="email-wrapper">
+        <!-- Header -->
+        <div class="header">
+            <h1>VIP & Industry News</h1>
+            <div class="subtitle">{{MONTH}} {{YEAR}}</div>
+        </div>
+
+        <!-- Introduction -->
+        <div class="intro">
+            <p>Hi all,</p>
+            <p style="margin-top: 10px;">I hope you are all doing well. I'm excited to share this month's VIP/Industry News with you all!</p>
+        </div>
+
+        <!-- Key Award Shows & Events -->
+        <div class="section">
+            <div class="section-header">
+                <h2>Key Award Shows & Events Ahead</h2>
+                <div class="line"></div>
+            </div>
+            <div class="events-grid">
+                {{#each events}}
+                <div class="event-date">{{date}}</div>
+                <div class="event-name">{{name}}</div>
+                {{/each}}
+            </div>
+            <p style="margin-top: 15px; font-size: 12px; color: #666; font-style: italic;">*Full {{YEAR}} Events Calendar</p>
+        </div>
+
+        <!-- Industry News -->
+        <div class="section">
+            <div class="section-header">
+                <h2>Industry News</h2>
+                <div class="line"></div>
+            </div>
+            <ul class="news-list">
+                {{#each industryNews}}
+                <li><strong>{{headline}}</strong>: {{detail}}</li>
+                {{/each}}
+            </ul>
+        </div>
+
+        <!-- Ambassador Announcements -->
+        <div class="section">
+            <div class="section-header">
+                <h2>Ambassador Announcements & Campaign Stars</h2>
+                <div class="line"></div>
+            </div>
+            <div class="ambassador-grid">
+                {{#each ambassadors}}
+                <div class="ambassador-item"><strong>{{talent}}</strong> for {{brand}}</div>
+                {{/each}}
+            </div>
+        </div>
+
+        <!-- Brand Partnerships -->
+        <div class="section">
+            <div class="section-header">
+                <h2>Brand Partnerships</h2>
+                <div class="line"></div>
+            </div>
+            <ul class="partnership-list">
+                {{#each partnerships}}
+                <li><strong>{{partner1}}</strong> x <strong>{{partner2}}</strong></li>
+                {{/each}}
+            </ul>
+        </div>
+
+        <!-- Ones to Watch / Key Castings -->
+        <div class="section">
+            <div class="section-header">
+                <h2>Ones to Watch / Key Castings</h2>
+                <div class="line"></div>
+            </div>
+            <ul class="casting-list">
+                {{#each castings}}
+                <li><strong>{{talent}}</strong> {{project}}</li>
+                {{/each}}
+            </ul>
+        </div>
+
+        <!-- Talent with Upcoming Projects -->
+        <div class="section">
+            <div class="section-header">
+                <h2>Talent with Upcoming Projects</h2>
+                <div class="line"></div>
+            </div>
+
+            <div class="projects-category">
+                <h3>Films</h3>
+                <ul class="projects-list">
+                    {{#each filmProjects}}
+                    <li><strong>{{talent}}</strong> - {{project}}</li>
+                    {{/each}}
+                </ul>
+            </div>
+
+            <div class="projects-category">
+                <h3>TV</h3>
+                <ul class="projects-list">
+                    {{#each tvProjects}}
+                    <li><strong>{{talent}}</strong> - {{project}}</li>
+                    {{/each}}
+                </ul>
+            </div>
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <div class="signature">Best,</div>
+            <div class="signature" style="margin-top: 10px;">{{SENDER_NAME}}</div>
+            <div class="title">{{SENDER_TITLE}}</div>
+            <div class="company">{{COMPANY_NAME}}</div>
+            <div class="contact">
+                {{COMPANY_ADDRESS}}<br>
+                <a href="mailto:{{SENDER_EMAIL}}">{{SENDER_EMAIL}}</a><br>
+                {{SENDER_PHONE}}<br>
+                <a href="{{COMPANY_URL}}">{{COMPANY_URL}}</a>
+            </div>
+            <a href="{{CALENDAR_LINK}}" class="cta-button">View Full Events Calendar</a>
+        </div>
+    </div>
+</body>
+</html>
