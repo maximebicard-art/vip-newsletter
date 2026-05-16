@@ -5,379 +5,108 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>VIP & Industry News</title>
     <style>
-        @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
-
-        * {
-            margin: 0;
-            padding: 0;
-            box-sizing: border-box;
-        }
-
-        body {
-            font-family: 'Inter', -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Helvetica, Arial, sans-serif;
-            background-color: #f5f5f5;
-            color: #1a1a1a;
-            line-height: 1.6;
-        }
-
-        .email-wrapper {
-            max-width: 680px;
-            margin: 0 auto;
-            background-color: #ffffff;
-        }
-
-        .header {
-            background-color: #000000;
-            color: #ffffff;
-            padding: 40px 30px;
-            text-align: center;
-        }
-
-        .header h1 {
-            font-size: 28px;
-            font-weight: 700;
-            letter-spacing: 2px;
-            text-transform: uppercase;
-            margin-bottom: 8px;
-        }
-
-        .header .subtitle {
-            font-size: 14px;
-            font-weight: 300;
-            letter-spacing: 3px;
-            text-transform: uppercase;
-            color: #cccccc;
-        }
-
-        .intro {
-            padding: 30px;
-            background-color: #fafafa;
-            border-bottom: 1px solid #eeeeee;
-        }
-
-        .intro p {
-            font-size: 15px;
-            color: #444444;
-            font-weight: 400;
-        }
-
-        .section {
-            padding: 30px;
-            border-bottom: 1px solid #eeeeee;
-        }
-
-        .section:last-child {
-            border-bottom: none;
-        }
-
-        .section-header {
-            display: flex;
-            align-items: center;
-            margin-bottom: 20px;
-        }
-
-        .section-header h2 {
-            font-size: 18px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: #000000;
-        }
-
-        .section-header .line {
-            flex-grow: 1;
-            height: 1px;
-            background-color: #000000;
-            margin-left: 15px;
-        }
-
-        .events-grid {
-            display: grid;
-            grid-template-columns: 80px 1fr;
-            gap: 12px 20px;
-        }
-
-        .event-date {
-            font-weight: 600;
-            font-size: 14px;
-            color: #000000;
-            text-transform: uppercase;
-        }
-
-        .event-name {
-            font-size: 14px;
-            color: #333333;
-        }
-
-        .event-name a {
-            color: #333333;
-            text-decoration: none;
-        }
-
-        .event-name a:hover {
-            text-decoration: underline;
-        }
-
-        .news-list, .partnership-list, .casting-list {
-            list-style: none;
-        }
-
-        .news-list li, .partnership-list li, .casting-list li {
-            padding: 10px 0;
-            border-bottom: 1px solid #f0f0f0;
-            font-size: 14px;
-            line-height: 1.5;
-        }
-
-        .news-list li:last-child, .partnership-list li:last-child, .casting-list li:last-child {
-            border-bottom: none;
-        }
-
-        .news-list li strong, .partnership-list li strong, .casting-list li strong {
-            font-weight: 600;
-            color: #000000;
-        }
-
-        .news-list li a {
-            color: #666666;
-            text-decoration: none;
-            font-size: 12px;
-            display: inline-block;
-            margin-top: 4px;
-        }
-
-        .news-list li a:hover {
-            text-decoration: underline;
-        }
-
-        .news-list li .source-tag {
-            display: inline-block;
-            background-color: #f0f0f0;
-            color: #666666;
-            font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 3px;
-            margin-top: 4px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .ambassador-grid {
-            display: grid;
-            grid-template-columns: 1fr 1fr;
-            gap: 12px;
-        }
-
-        .ambassador-item {
-            padding: 8px 0;
-            font-size: 14px;
-            border-bottom: 1px solid #f0f0f0;
-        }
-
-        .ambassador-item strong {
-            font-weight: 600;
-        }
-
-        .ambassador-item a {
-            color: #333333;
-            text-decoration: none;
-        }
-
-        .ambassador-item a:hover {
-            text-decoration: underline;
-        }
-
-        .ambassador-item .source-tag {
-            display: inline-block;
-            background-color: #f0f0f0;
-            color: #666666;
-            font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 3px;
-            margin-top: 4px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .projects-category {
-            margin-bottom: 20px;
-        }
-
-        .projects-category h3 {
-            font-size: 13px;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            color: #666666;
-            margin-bottom: 10px;
-            padding-bottom: 5px;
-            border-bottom: 2px solid #000000;
-            display: inline-block;
-        }
-
-        .projects-list li {
-            padding: 6px 0;
-            font-size: 14px;
-        }
-
-        .projects-list li strong {
-            font-weight: 600;
-        }
-
-        .projects-list li a {
-            color: #666666;
-            text-decoration: none;
-            font-size: 12px;
-            display: inline-block;
-            margin-top: 4px;
-        }
-
-        .projects-list li a:hover {
-            text-decoration: underline;
-        }
-
-        .projects-list li .source-tag {
-            display: inline-block;
-            background-color: #f0f0f0;
-            color: #666666;
-            font-size: 10px;
-            padding: 2px 6px;
-            border-radius: 3px;
-            margin-top: 4px;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .footer {
-            background-color: #000000;
-            color: #ffffff;
-            padding: 40px 30px;
-            text-align: center;
-        }
-
-        .footer .signature {
-            font-size: 16px;
-            font-weight: 600;
-            margin-bottom: 5px;
-        }
-
-        .footer .title {
-            font-size: 13px;
-            color: #aaaaaa;
-            margin-bottom: 20px;
-            text-transform: uppercase;
-            letter-spacing: 1px;
-        }
-
-        .footer .company {
-            font-size: 14px;
-            font-weight: 700;
-            margin-bottom: 15px;
-            text-transform: uppercase;
-            letter-spacing: 2px;
-        }
-
-        .footer .contact {
-            font-size: 13px;
-            color: #aaaaaa;
-            line-height: 1.8;
-        }
-
-        .footer .contact a {
-            color: #ffffff;
-            text-decoration: none;
-        }
-
-        .cta-button {
-            display: inline-block;
-            margin-top: 20px;
-            padding: 12px 30px;
-            background-color: #ffffff;
-            color: #000000;
-            text-decoration: none;
-            font-size: 12px;
-            font-weight: 600;
-            text-transform: uppercase;
-            letter-spacing: 1.5px;
-            border-radius: 0;
-        }
-
+        /* Fallback for clients that support style tags */
+        body { margin: 0; padding: 0; background-color: #f5f5f5; font-family: Arial, Helvetica, sans-serif; }
+        .email-wrapper { max-width: 680px; margin: 0 auto; background-color: #ffffff; }
+        .header { background-color: #000000; color: #ffffff; padding: 40px 30px; text-align: center; }
+        .header h1 { font-size: 28px; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; margin: 0 0 8px 0; }
+        .header .subtitle { font-size: 14px; font-weight: normal; letter-spacing: 3px; text-transform: uppercase; color: #cccccc; margin: 0; }
+        .intro { padding: 30px; background-color: #fafafa; border-bottom: 1px solid #eeeeee; }
+        .intro p { font-size: 15px; color: #444444; margin: 0 0 10px 0; line-height: 1.6; }
+        .section { padding: 30px; border-bottom: 1px solid #eeeeee; }
+        .section-header { display: flex; align-items: center; margin-bottom: 20px; }
+        .section-header h2 { font-size: 18px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px; color: #000000; margin: 0; }
+        .section-header .line { flex-grow: 1; height: 1px; background-color: #000000; margin-left: 15px; }
+        .events-grid { display: grid; grid-template-columns: 80px 1fr; gap: 12px 20px; }
+        .event-date { font-weight: bold; font-size: 14px; color: #000000; text-transform: uppercase; }
+        .event-name { font-size: 14px; color: #333333; line-height: 1.4; }
+        .event-name a { color: #333333; text-decoration: underline; }
+        .news-list, .partnership-list, .casting-list { list-style: none; margin: 0; padding: 0; }
+        .news-list li, .partnership-list li, .casting-list li { padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; line-height: 1.5; }
+        .news-list li:last-child, .partnership-list li:last-child, .casting-list li:last-child { border-bottom: none; }
+        .news-list li strong, .partnership-list li strong, .casting-list li strong { font-weight: bold; color: #000000; }
+        .news-list li a, .partnership-list li a, .casting-list li a { color: #0066cc; text-decoration: underline; font-size: 12px; }
+        .news-list li .source-tag, .partnership-list li .source-tag, .casting-list li .source-tag { display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .ambassador-grid { display: grid; grid-template-columns: 1fr 1fr; gap: 12px; }
+        .ambassador-item { padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f0f0f0; }
+        .ambassador-item strong { font-weight: bold; }
+        .ambassador-item a { color: #333333; text-decoration: underline; }
+        .ambassador-item .source-tag { display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .projects-category { margin-bottom: 20px; }
+        .projects-category h3 { font-size: 13px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px; color: #666666; margin: 0 0 10px 0; padding-bottom: 5px; border-bottom: 2px solid #000000; display: inline-block; }
+        .projects-list { list-style: none; margin: 0; padding: 0; }
+        .projects-list li { padding: 6px 0; font-size: 14px; line-height: 1.5; }
+        .projects-list li strong { font-weight: bold; }
+        .projects-list li a { color: #0066cc; text-decoration: underline; font-size: 12px; }
+        .projects-list li .source-tag { display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px; }
+        .footer { background-color: #000000; color: #ffffff; padding: 40px 30px; text-align: center; }
+        .footer .signature { font-size: 16px; font-weight: bold; margin-bottom: 5px; }
+        .footer .title { font-size: 13px; color: #aaaaaa; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px; }
+        .footer .company { font-size: 14px; font-weight: bold; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px; }
+        .footer .contact { font-size: 13px; color: #aaaaaa; line-height: 1.8; }
+        .footer .contact a { color: #ffffff; text-decoration: underline; }
+        .cta-button { display: inline-block; margin-top: 20px; padding: 12px 30px; background-color: #ffffff; color: #000000; text-decoration: none; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px; }
         @media screen and (max-width: 600px) {
-            .ambassador-grid {
-                grid-template-columns: 1fr;
-            }
-
-            .events-grid {
-                grid-template-columns: 1fr;
-                gap: 4px 0;
-            }
-
-            .event-date {
-                margin-top: 10px;
-            }
-
-            .section {
-                padding: 20px;
-            }
-
-            .header h1 {
-                font-size: 22px;
-            }
+            .ambassador-grid { grid-template-columns: 1fr; }
+            .events-grid { grid-template-columns: 1fr; gap: 4px 0; }
+            .event-date { margin-top: 10px; }
+            .section { padding: 20px; }
+            .header h1 { font-size: 22px; }
         }
     </style>
 <base target="_blank">
 </head>
-<body>
-    <div class="email-wrapper">
+<body style="margin: 0; padding: 0; background-color: #f5f5f5; font-family: Arial, Helvetica, sans-serif;">
+    <div class="email-wrapper" style="max-width: 680px; margin: 0 auto; background-color: #ffffff;">
         <!-- Header -->
-        <div class="header">
-            <h1>VIP & Industry News</h1>
-            <div class="subtitle">{{ MONTH }} {{ YEAR }}</div>
+        <div class="header" style="background-color: #000000; color: #ffffff; padding: 40px 30px; text-align: center;">
+            <h1 style="font-size: 28px; font-weight: bold; letter-spacing: 2px; text-transform: uppercase; margin: 0 0 8px 0;">VIP & Industry News</h1>
+            <div class="subtitle" style="font-size: 14px; font-weight: normal; letter-spacing: 3px; text-transform: uppercase; color: #cccccc; margin: 0;">{{ MONTH }} {{ YEAR }}</div>
         </div>
 
         <!-- Introduction -->
-        <div class="intro">
-            <p>Hi all,</p>
-            <p style="margin-top: 10px;">I hope you are all doing well. I'm excited to share this month's VIP/Industry News with you all!</p>
+        <div class="intro" style="padding: 30px; background-color: #fafafa; border-bottom: 1px solid #eeeeee;">
+            <p style="font-size: 15px; color: #444444; margin: 0 0 10px 0; line-height: 1.6;">Hi all,</p>
+            <p style="font-size: 15px; color: #444444; margin: 0; line-height: 1.6;">I hope you are all doing well. I'm excited to share this month's VIP/Industry News with you all!</p>
         </div>
 
         <!-- Key Award Shows & Events -->
-        <div class="section">
-            <div class="section-header">
-                <h2>Key Award Shows & Events Ahead</h2>
-                <div class="line"></div>
+        <div class="section" style="padding: 30px; border-bottom: 1px solid #eeeeee;">
+            <div class="section-header" style="display: flex; align-items: center; margin-bottom: 20px;">
+                <h2 style="font-size: 18px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px; color: #000000; margin: 0;">Key Award Shows & Events Ahead</h2>
+                <div class="line" style="flex-grow: 1; height: 1px; background-color: #000000; margin-left: 15px;"></div>
             </div>
-            <div class="events-grid">
+            <div class="events-grid" style="display: grid; grid-template-columns: 80px 1fr; gap: 12px 20px;">
                 {% for event in events %}
-                <div class="event-date">{{ event.date }}</div>
-                <div class="event-name">
+                <div class="event-date" style="font-weight: bold; font-size: 14px; color: #000000; text-transform: uppercase;">{{ event.date }}</div>
+                <div class="event-name" style="font-size: 14px; color: #333333; line-height: 1.4;">
                     {% if event.link %}
-                    <a href="{{ event.link }}">{{ event.name }}</a>
+                    <a href="{{ event.link }}" style="color: #333333; text-decoration: underline;">{{ event.name }}</a>
                     {% else %}
                     {{ event.name }}
                     {% endif %}
                 </div>
                 {% endfor %}
             </div>
-            <p style="margin-top: 15px; font-size: 12px; color: #666; font-style: italic;">*Full {{ YEAR }} Events Calendar</p>
+            <p style="margin-top: 15px; font-size: 12px; color: #666666; font-style: italic;">*Full {{ YEAR }} Events Calendar</p>
         </div>
 
         <!-- Industry News -->
-        <div class="section">
-            <div class="section-header">
-                <h2>Industry News</h2>
-                <div class="line"></div>
+        <div class="section" style="padding: 30px; border-bottom: 1px solid #eeeeee;">
+            <div class="section-header" style="display: flex; align-items: center; margin-bottom: 20px;">
+                <h2 style="font-size: 18px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px; color: #000000; margin: 0;">Industry News</h2>
+                <div class="line" style="flex-grow: 1; height: 1px; background-color: #000000; margin-left: 15px;"></div>
             </div>
-            <ul class="news-list">
+            <ul class="news-list" style="list-style: none; margin: 0; padding: 0;">
                 {% for item in industryNews %}
-                <li>
-                    <strong>{{ item.headline }}</strong>: {{ item.detail }}
+                <li style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; line-height: 1.5;">
+                    <strong style="font-weight: bold; color: #000000;">{{ item.headline }}</strong>: {{ item.detail }}
                     <br>
                     {% if item.link %}
-                    <a href="{{ item.link }}">Read more →</a>
+                    <a href="{{ item.link }}" style="color: #0066cc; text-decoration: underline; font-size: 12px;">Read more →</a>
                     {% endif %}
                     {% if item.source %}
-                    <span class="source-tag">{{ item.source }}</span>
+                    <span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">{{ item.source }}</span>
                     {% endif %}
                 </li>
                 {% endfor %}
@@ -385,21 +114,21 @@
         </div>
 
         <!-- Ambassador Announcements -->
-        <div class="section">
-            <div class="section-header">
-                <h2>Ambassador Announcements & Campaign Stars</h2>
-                <div class="line"></div>
+        <div class="section" style="padding: 30px; border-bottom: 1px solid #eeeeee;">
+            <div class="section-header" style="display: flex; align-items: center; margin-bottom: 20px;">
+                <h2 style="font-size: 18px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px; color: #000000; margin: 0;">Ambassador Announcements & Campaign Stars</h2>
+                <div class="line" style="flex-grow: 1; height: 1px; background-color: #000000; margin-left: 15px;"></div>
             </div>
-            <div class="ambassador-grid">
+            <div class="ambassador-grid" style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
                 {% for item in ambassadors %}
-                <div class="ambassador-item">
+                <div class="ambassador-item" style="padding: 8px 0; font-size: 14px; border-bottom: 1px solid #f0f0f0;">
                     {% if item.link %}
-                    <a href="{{ item.link }}"><strong>{{ item.talent }}</strong> for {{ item.brand }}</a>
+                    <a href="{{ item.link }}" style="color: #333333; text-decoration: underline;"><strong style="font-weight: bold;">{{ item.talent }}</strong> for {{ item.brand }}</a>
                     {% else %}
-                    <strong>{{ item.talent }}</strong> for {{ item.brand }}
+                    <strong style="font-weight: bold;">{{ item.talent }}</strong> for {{ item.brand }}
                     {% endif %}
                     {% if item.source %}
-                    <br><span class="source-tag">{{ item.source }}</span>
+                    <br><span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">{{ item.source }}</span>
                     {% endif %}
                 </div>
                 {% endfor %}
@@ -407,21 +136,21 @@
         </div>
 
         <!-- Brand Partnerships -->
-        <div class="section">
-            <div class="section-header">
-                <h2>Brand Partnerships</h2>
-                <div class="line"></div>
+        <div class="section" style="padding: 30px; border-bottom: 1px solid #eeeeee;">
+            <div class="section-header" style="display: flex; align-items: center; margin-bottom: 20px;">
+                <h2 style="font-size: 18px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px; color: #000000; margin: 0;">Brand Partnerships</h2>
+                <div class="line" style="flex-grow: 1; height: 1px; background-color: #000000; margin-left: 15px;"></div>
             </div>
-            <ul class="partnership-list">
+            <ul class="partnership-list" style="list-style: none; margin: 0; padding: 0;">
                 {% for item in partnerships %}
-                <li>
+                <li style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; line-height: 1.5;">
                     {% if item.link %}
-                    <a href="{{ item.link }}"><strong>{{ item.partner1 }}</strong> x <strong>{{ item.partner2 }}</strong></a>
+                    <a href="{{ item.link }}" style="color: #333333; text-decoration: underline;"><strong style="font-weight: bold;">{{ item.partner1 }}</strong> x <strong style="font-weight: bold;">{{ item.partner2 }}</strong></a>
                     {% else %}
-                    <strong>{{ item.partner1 }}</strong> x <strong>{{ item.partner2 }}</strong>
+                    <strong style="font-weight: bold;">{{ item.partner1 }}</strong> x <strong style="font-weight: bold;">{{ item.partner2 }}</strong>
                     {% endif %}
                     {% if item.source %}
-                    <br><span class="source-tag">{{ item.source }}</span>
+                    <br><span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">{{ item.source }}</span>
                     {% endif %}
                 </li>
                 {% endfor %}
@@ -429,20 +158,20 @@
         </div>
 
         <!-- Ones to Watch / Key Castings -->
-        <div class="section">
-            <div class="section-header">
-                <h2>Ones to Watch / Key Castings</h2>
-                <div class="line"></div>
+        <div class="section" style="padding: 30px; border-bottom: 1px solid #eeeeee;">
+            <div class="section-header" style="display: flex; align-items: center; margin-bottom: 20px;">
+                <h2 style="font-size: 18px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px; color: #000000; margin: 0;">Ones to Watch / Key Castings</h2>
+                <div class="line" style="flex-grow: 1; height: 1px; background-color: #000000; margin-left: 15px;"></div>
             </div>
-            <ul class="casting-list">
+            <ul class="casting-list" style="list-style: none; margin: 0; padding: 0;">
                 {% for item in castings %}
-                <li>
-                    <strong>{{ item.talent }}</strong> {{ item.project }}
+                <li style="padding: 10px 0; border-bottom: 1px solid #f0f0f0; font-size: 14px; line-height: 1.5;">
+                    <strong style="font-weight: bold; color: #000000;">{{ item.talent }}</strong> {{ item.project }}
                     {% if item.link %}
-                    <br><a href="{{ item.link }}">Read more →</a>
+                    <br><a href="{{ item.link }}" style="color: #0066cc; text-decoration: underline; font-size: 12px;">Read more →</a>
                     {% endif %}
                     {% if item.source %}
-                    <span class="source-tag">{{ item.source }}</span>
+                    <span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">{{ item.source }}</span>
                     {% endif %}
                 </li>
                 {% endfor %}
@@ -450,40 +179,40 @@
         </div>
 
         <!-- Talent with Upcoming Projects -->
-        <div class="section">
-            <div class="section-header">
-                <h2>Talent with Upcoming Projects</h2>
-                <div class="line"></div>
+        <div class="section" style="padding: 30px; border-bottom: 1px solid #eeeeee;">
+            <div class="section-header" style="display: flex; align-items: center; margin-bottom: 20px;">
+                <h2 style="font-size: 18px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px; color: #000000; margin: 0;">Talent with Upcoming Projects</h2>
+                <div class="line" style="flex-grow: 1; height: 1px; background-color: #000000; margin-left: 15px;"></div>
             </div>
 
-            <div class="projects-category">
-                <h3>Films</h3>
-                <ul class="projects-list">
+            <div class="projects-category" style="margin-bottom: 20px;">
+                <h3 style="font-size: 13px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px; color: #666666; margin: 0 0 10px 0; padding-bottom: 5px; border-bottom: 2px solid #000000; display: inline-block;">Films</h3>
+                <ul class="projects-list" style="list-style: none; margin: 0; padding: 0;">
                     {% for item in filmProjects %}
-                    <li>
-                        <strong>{{ item.talent }}</strong> - {{ item.project }}
+                    <li style="padding: 6px 0; font-size: 14px; line-height: 1.5;">
+                        <strong style="font-weight: bold;">{{ item.talent }}</strong> - {{ item.project }}
                         {% if item.link %}
-                        <br><a href="{{ item.link }}">Read more →</a>
+                        <br><a href="{{ item.link }}" style="color: #0066cc; text-decoration: underline; font-size: 12px;">Read more →</a>
                         {% endif %}
                         {% if item.source %}
-                        <span class="source-tag">{{ item.source }}</span>
+                        <span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">{{ item.source }}</span>
                         {% endif %}
                     </li>
                     {% endfor %}
                 </ul>
             </div>
 
-            <div class="projects-category">
-                <h3>TV</h3>
-                <ul class="projects-list">
+            <div class="projects-category" style="margin-bottom: 20px;">
+                <h3 style="font-size: 13px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px; color: #666666; margin: 0 0 10px 0; padding-bottom: 5px; border-bottom: 2px solid #000000; display: inline-block;">TV</h3>
+                <ul class="projects-list" style="list-style: none; margin: 0; padding: 0;">
                     {% for item in tvProjects %}
-                    <li>
-                        <strong>{{ item.talent }}</strong> - {{ item.project }}
+                    <li style="padding: 6px 0; font-size: 14px; line-height: 1.5;">
+                        <strong style="font-weight: bold;">{{ item.talent }}</strong> - {{ item.project }}
                         {% if item.link %}
-                        <br><a href="{{ item.link }}">Read more →</a>
+                        <br><a href="{{ item.link }}" style="color: #0066cc; text-decoration: underline; font-size: 12px;">Read more →</a>
                         {% endif %}
                         {% if item.source %}
-                        <span class="source-tag">{{ item.source }}</span>
+                        <span class="source-tag" style="display: inline-block; background-color: #f0f0f0; color: #666666; font-size: 10px; padding: 2px 6px; border-radius: 3px; margin-top: 4px; text-transform: uppercase; letter-spacing: 0.5px;">{{ item.source }}</span>
                         {% endif %}
                     </li>
                     {% endfor %}
@@ -492,18 +221,18 @@
         </div>
 
         <!-- Footer -->
-        <div class="footer">
-            <div class="signature">Best,</div>
-            <div class="signature" style="margin-top: 10px;">{{ SENDER_NAME }}</div>
-            <div class="title">{{ SENDER_TITLE }}</div>
-            <div class="company">{{ COMPANY_NAME }}</div>
-            <div class="contact">
+        <div class="footer" style="background-color: #000000; color: #ffffff; padding: 40px 30px; text-align: center;">
+            <div class="signature" style="font-size: 16px; font-weight: bold; margin-bottom: 5px;">Best,</div>
+            <div class="signature" style="font-size: 16px; font-weight: bold; margin-top: 10px; margin-bottom: 5px;">{{ SENDER_NAME }}</div>
+            <div class="title" style="font-size: 13px; color: #aaaaaa; margin-bottom: 20px; text-transform: uppercase; letter-spacing: 1px;">{{ SENDER_TITLE }}</div>
+            <div class="company" style="font-size: 14px; font-weight: bold; margin-bottom: 15px; text-transform: uppercase; letter-spacing: 2px;">{{ COMPANY_NAME }}</div>
+            <div class="contact" style="font-size: 13px; color: #aaaaaa; line-height: 1.8;">
                 {{ COMPANY_ADDRESS | safe }}<br>
-                <a href="mailto:{{ SENDER_EMAIL }}">{{ SENDER_EMAIL }}</a><br>
+                <a href="mailto:{{ SENDER_EMAIL }}" style="color: #ffffff; text-decoration: underline;">{{ SENDER_EMAIL }}</a><br>
                 {{ SENDER_PHONE }}<br>
-                <a href="{{ COMPANY_URL }}">{{ COMPANY_URL }}</a>
+                <a href="{{ COMPANY_URL }}" style="color: #ffffff; text-decoration: underline;">{{ COMPANY_URL }}</a>
             </div>
-            <a href="{{ CALENDAR_LINK }}" class="cta-button">View Full Events Calendar</a>
+            <a href="{{ CALENDAR_LINK }}" class="cta-button" style="display: inline-block; margin-top: 20px; padding: 12px 30px; background-color: #ffffff; color: #000000; text-decoration: none; font-size: 12px; font-weight: bold; text-transform: uppercase; letter-spacing: 1.5px;">View Full Events Calendar</a>
         </div>
     </div>
 </body>
