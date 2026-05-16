@@ -2,29 +2,30 @@ name: Weekly VIP Newsletter
 
 on:
   schedule:
-    # Run every Friday at 9:00 AM UTC (adjust as needed)
+    # Run every Friday at 9:00 AM UTC
     - cron: '0 9 * * 5'
   workflow_dispatch:  # Allow manual trigger
 
 jobs:
   generate-and-send:
     runs-on: ubuntu-latest
-
+    
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-
+      
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.11'
-
+    
     - name: Install dependencies
       run: |
         pip install -r requirements.txt
-
+    
     - name: Generate newsletter
       env:
+        FORCE_JAVASCRIPT_ACTIONS_TO_NODE24: true
         NEWSLETTER_RECIPIENT: ${{ secrets.NEWSLETTER_RECIPIENT }}
         BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
         EMAIL_PROVIDER: ${{ secrets.EMAIL_PROVIDER }}
@@ -40,8 +41,8 @@ jobs:
         CALENDAR_LINK: ${{ secrets.CALENDAR_LINK }}
         SEND_EMAIL: ${{ secrets.SEND_EMAIL }}
       run: |
-        python auto_newsletter.py
-
+        python auto_newsletter_v2.py
+    
     - name: Upload generated newsletter
       uses: actions/upload-artifact@v4
       with:
