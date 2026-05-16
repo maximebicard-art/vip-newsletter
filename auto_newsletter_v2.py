@@ -1,16 +1,12 @@
 #!/usr/bin/env python3
 """
-VIP & Industry News - FULLY AUTOMATED Newsletter System v2.0
-===========================================================
-Expanded source catalog with European, French, Luxury & Beauty coverage.
-
-Scrapes RSS feeds → Categorizes content → Generates HTML → Sends to Tutanota
-
-Setup:
-1. pip install feedparser jinja2 requests
-2. Set environment variables (see .env.example)
-3. Run: python auto_newsletter.py
-4. Schedule: cron weekly or GitHub Actions
+VIP & Industry News - AUTOMATED NEWSLETTER SYSTEM v3.0
+======================================================
+Changes from v2.0:
+- Added source links to every item
+- Volume limits per section (prevents overwhelming newsletters)
+- Better deduplication
+- Improved formatting
 """
 
 import os
@@ -20,7 +16,6 @@ import re
 import feedparser
 from datetime import datetime, timedelta
 from pathlib import Path
-from urllib.parse import urlparse
 
 try:
     import requests
@@ -58,10 +53,21 @@ EMAIL_CONFIG = {
 }
 
 # =============================================================================
-# RSS FEED SOURCES - STARTER PACK (Expandable)
+# VOLUME LIMITS - Max items per section
 # =============================================================================
-# See SOURCES_CATALOG.md for 80+ additional sources to add.
-# This starter pack gives balanced US + European + Beauty coverage.
+MAX_ITEMS = {
+    "events": 15,
+    "industryNews": 12,        # Reduced from unlimited
+    "ambassadors": 15,
+    "partnerships": 12,
+    "castings": 10,
+    "filmProjects": 10,
+    "tvProjects": 10,
+}
+
+# =============================================================================
+# RSS FEED SOURCES
+# =============================================================================
 
 RSS_SOURCES = {
     "events": [
@@ -109,7 +115,7 @@ RSS_SOURCES = {
 }
 
 # =============================================================================
-# CONTENT CLASSIFIERS (Keyword-based NLP)
+# CONTENT CLASSIFIERS
 # =============================================================================
 
 CLASSIFIERS = {
@@ -202,7 +208,6 @@ class NewsletterScraper:
         }
 
     def fetch_all_feeds(self):
-        """Fetch all RSS feeds and collect items."""
         print("\n" + "="*60)
         print("📡 FETCHING RSS FEEDS")
         print("="*60)
@@ -244,7 +249,6 @@ class NewsletterScraper:
         return self
 
     def _parse_date(self, entry):
-        """Extract date from feed entry."""
         for field in ['published_parsed', 'updated_parsed', 'created_parsed']:
             if hasattr(entry, field) and getattr(entry, field):
                 dt = getattr(entry, field)
@@ -252,7 +256,6 @@ class NewsletterScraper:
         return datetime.now()
 
     def categorize_content(self):
-        """Categorize items using keyword classifiers."""
         print("\n" + "="*60)
         print("🧠 CATEGORIZING CONTENT")
         print("="*60)
@@ -267,15 +270,12 @@ class NewsletterScraper:
                 exclude = rules.get('exclude', [])
                 must_have = rules.get('must_have', [])
 
-                # Check exclusions
                 if any(exc.lower() in text for exc in exclude):
                     continue
 
-                # Check must-have
                 if must_have and not any(mh.lower() in text for mh in must_have):
                     continue
 
-                # Score keywords
                 for kw in keywords:
                     if kw.lower() in text:
                         score += 1
@@ -292,29 +292,43 @@ class NewsletterScraper:
                 if formatted and not self._is_duplicate(formatted, "industryNews"):
                     self.categorized["industryNews"].append(formatted)
 
-        # Summary
-        print("\n📊 CATEGORIZATION RESULTS:")
+        # Apply volume limits
+        print("\n📊 CATEGORIZATION RESULTS (before limits):")
+        for cat, items in self.categorized.items():
+            print(f"   • {cat}: {len(items)} items")
+
+        self._apply_limits()
+
+        print("\n📊 FINAL RESULTS (after limits):")
         for cat, items in self.categorized.items():
             print(f"   • {cat}: {len(items)} items")
 
         return self
 
+    def _apply_limits(self):
+        """Limit items per section to prevent overwhelming newsletters."""
+        for category, max_count in MAX_ITEMS.items():
+            if len(self.categorized[category]) > max_count:
+                # Keep the most recent/relevant items (already sorted by date implicitly)
+                self.categorized[category] = self.categorized[category][:max_count]
+                print(f"   ↳ {category}: trimmed to {max_count} items")
+
     def _format_item(self, item, category):
-        """Format raw item into newsletter structure."""
         title = item['title'].strip()
         summary = re.sub(r'<[^>]+>', '', item['summary'])
-        summary = summary[:250] + "..." if len(summary) > 250 else summary
+        summary = summary[:200] + "..." if len(summary) > 200 else summary
+        link = item.get('link', '')
+        source = item.get('source', '')
 
         if category == "events":
             date_match = re.search(r'(\w+\s+\d{1,2}|\d{1,2}\s+\w+)', title)
             date = date_match.group(1) if date_match else "TBA"
-            return {"date": date, "name": title}
+            return {"date": date, "name": title, "link": link, "source": source}
 
         elif category == "industryNews":
-            return {"headline": title, "detail": summary}
+            return {"headline": title, "detail": summary, "link": link, "source": source}
 
         elif category == "ambassadors":
-            # Try to extract "Talent for Brand"
             patterns = [
                 r'([A-Z][a-zA-Z\s\.\'\-]+)(?:\s+(?:is|as|for|joins|signs|tapped|named|becomes)).*?([A-Z][a-zA-Z\s&\'\-]+?)(?:\s+(?:as|brand|ambassador|face|muse|spokesperson|campaign))',
                 r'([A-Z][a-zA-Z\s\.\'\-]+)(?:\s+(?:fronts|stars in|leads)).*?([A-Z][a-zA-Z\s&\'\-]+?)(?:\s+campaign)',
@@ -322,32 +336,35 @@ class NewsletterScraper:
             for pattern in patterns:
                 match = re.search(pattern, title)
                 if match:
-                    return {"talent": match.group(1).strip(), "brand": match.group(2).strip()}
-            return {"talent": title[:50], "brand": "New Campaign"}
+                    return {"talent": match.group(1).strip(), "brand": match.group(2).strip(), "link": link, "source": source}
+            return {"talent": title[:50], "brand": "New Campaign", "link": link, "source": source}
 
         elif category == "partnerships":
             separators = [' x ', ' X ', ' × ', ' Collaborates With ', ' Partners With ', ' Teams Up With ', ' Joins Forces With ']
             for sep in separators:
                 if sep in title:
                     parts = title.split(sep, 1)
-                    return {"partner1": parts[0].strip(), "partner2": parts[1].strip()}
-            return {"partner1": title[:40], "partner2": "Collaboration"}
+                    return {"partner1": parts[0].strip(), "partner2": parts[1].strip(), "link": link, "source": source}
+            return {"partner1": title[:40], "partner2": "Collaboration", "link": link, "source": source}
 
         elif category in ["castings", "filmProjects", "tvProjects"]:
-            return {"talent": title[:60], "project": summary[:100]}
+            return {"talent": title[:60], "project": summary[:100], "link": link, "source": source}
 
         return None
 
     def _is_duplicate(self, item, category):
-        """Check for duplicates."""
         existing = self.categorized.get(category, [])
         for e in existing:
-            if any(e.get(k) == item.get(k) for k in item.keys() if k in e and item.get(k)):
+            # Check if headline/talent is similar
+            if item.get('headline') and e.get('headline') == item.get('headline'):
+                return True
+            if item.get('talent') and e.get('talent') == item.get('talent'):
+                return True
+            if item.get('name') and e.get('name') == item.get('name'):
                 return True
         return False
 
     def get_newsletter_data(self):
-        """Return data ready for template rendering."""
         now = datetime.now()
         return {
             "MONTH": now.strftime('%B'),
@@ -365,14 +382,11 @@ class NewsletterScraper:
 
 
 class EmailSender:
-    """Send emails via various providers."""
-
     def __init__(self, config):
         self.config = config
         self.provider = config.get("provider", "brevo")
 
     def send(self, to_email, subject, html_content):
-        """Send email using configured provider."""
         print(f"\n📧 Sending via {self.provider}...")
 
         if self.provider == "brevo":
@@ -535,16 +549,14 @@ def save_newsletter(html, filename=None):
 
 def main():
     print("=" * 60)
-    print("VIP & INDUSTRY NEWS - AUTOMATED NEWSLETTER SYSTEM v2.0")
+    print("VIP & INDUSTRY NEWS - AUTOMATED NEWSLETTER SYSTEM v3.0")
     print("=" * 60)
     print(f"📅 Running: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
 
-    # Step 1: Scrape
     scraper = NewsletterScraper(days_back=7)
     scraper.fetch_all_feeds().categorize_content()
     data = scraper.get_newsletter_data()
 
-    # Step 2: Render
     try:
         template = load_template()
     except FileNotFoundError:
@@ -553,10 +565,8 @@ def main():
 
     html = render_newsletter(data, template)
 
-    # Step 3: Save
     save_newsletter(html)
 
-    # Step 4: Send
     if os.getenv("SEND_EMAIL", "0") == "1":
         subject = f"VIP & Industry News | {data['MONTH']} {data['YEAR']}"
         sender = EmailSender(EMAIL_CONFIG)
