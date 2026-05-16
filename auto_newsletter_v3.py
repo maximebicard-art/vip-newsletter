@@ -1,12 +1,11 @@
 #!/usr/bin/env python3
 """
-VIP & Industry News - AUTOMATED NEWSLETTER SYSTEM v3.0
+VIP & Industry News - AUTOMATED NEWSLETTER SYSTEM v3.1
 ======================================================
-Changes from v2.0:
-- Added source links to every item
-- Volume limits per section (prevents overwhelming newsletters)
-- Better deduplication
-- Improved formatting
+Fixes from v3.0:
+- Better event handling (no more false date extraction)
+- Improved CSS inline styles for email client compatibility
+- Source links and volume limits maintained
 """
 
 import os
@@ -53,11 +52,11 @@ EMAIL_CONFIG = {
 }
 
 # =============================================================================
-# VOLUME LIMITS - Max items per section
+# VOLUME LIMITS
 # =============================================================================
 MAX_ITEMS = {
-    "events": 15,
-    "industryNews": 12,        # Reduced from unlimited
+    "events": 12,
+    "industryNews": 12,
     "ambassadors": 15,
     "partnerships": 12,
     "castings": 10,
@@ -128,7 +127,7 @@ CLASSIFIERS = {
             "ballet", "opera", "opening night", "benefit", "fundraiser",
             "after party", "red carpet", "afterparty", "opening",
         ],
-        "exclude": ["after", "review", "recap", "best dressed", "worst dressed", "red carpet looks"],
+        "exclude": ["after", "review", "recap", "best dressed", "worst dressed", "red carpet looks", "prediction", "predictions", "contender", "contenders", "nomination", "nominations"],
     },
     "ambassadors": {
         "keywords": [
@@ -292,7 +291,6 @@ class NewsletterScraper:
                 if formatted and not self._is_duplicate(formatted, "industryNews"):
                     self.categorized["industryNews"].append(formatted)
 
-        # Apply volume limits
         print("\n📊 CATEGORIZATION RESULTS (before limits):")
         for cat, items in self.categorized.items():
             print(f"   • {cat}: {len(items)} items")
@@ -306,10 +304,8 @@ class NewsletterScraper:
         return self
 
     def _apply_limits(self):
-        """Limit items per section to prevent overwhelming newsletters."""
         for category, max_count in MAX_ITEMS.items():
             if len(self.categorized[category]) > max_count:
-                # Keep the most recent/relevant items (already sorted by date implicitly)
                 self.categorized[category] = self.categorized[category][:max_count]
                 print(f"   ↳ {category}: trimmed to {max_count} items")
 
@@ -321,9 +317,15 @@ class NewsletterScraper:
         source = item.get('source', '')
 
         if category == "events":
-            date_match = re.search(r'(\w+\s+\d{1,2}|\d{1,2}\s+\w+)', title)
-            date = date_match.group(1) if date_match else "TBA"
-            return {"date": date, "name": title, "link": link, "source": source}
+            # Don't try to extract dates from headlines - they don't contain them
+            # Just use the article title as the event name
+            # The date will be empty or we can use the pub date
+            pub_date = item.get('published')
+            if pub_date:
+                date_str = pub_date.strftime('%b %d') if isinstance(pub_date, datetime) else "TBA"
+            else:
+                date_str = "TBA"
+            return {"date": date_str, "name": title, "link": link, "source": source}
 
         elif category == "industryNews":
             return {"headline": title, "detail": summary, "link": link, "source": source}
@@ -355,7 +357,6 @@ class NewsletterScraper:
     def _is_duplicate(self, item, category):
         existing = self.categorized.get(category, [])
         for e in existing:
-            # Check if headline/talent is similar
             if item.get('headline') and e.get('headline') == item.get('headline'):
                 return True
             if item.get('talent') and e.get('talent') == item.get('talent'):
@@ -549,7 +550,7 @@ def save_newsletter(html, filename=None):
 
 def main():
     print("=" * 60)
-    print("VIP & INDUSTRY NEWS - AUTOMATED NEWSLETTER SYSTEM v3.0")
+    print("VIP & INDUSTRY NEWS - AUTOMATED NEWSLETTER SYSTEM v3.1")
     print("=" * 60)
     print(f"📅 Running: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
 
