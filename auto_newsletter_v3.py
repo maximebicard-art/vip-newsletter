@@ -326,7 +326,7 @@ ARTICLES:
             source = item.get('source', 'Unknown')
             prompt += f"\n[{i}] {title} (Source: {source})"
 
-        prompt += f"\n\nReturn JSON: {{"selected": [...]}}"
+        prompt += "\n\nReturn JSON: {\"selected\": [...]}"
         return prompt
 
 
