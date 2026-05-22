@@ -1,13 +1,13 @@
 #!/usr/bin/env python3
 """
-VIP & Industry News - AUTOMATED NEWSLETTER SYSTEM v3.2
+VIP & Industry News - AUTOMATED NEWSLETTER SYSTEM v3.3
 ======================================================
-Fixes from v3.1:
+Fixes from v3.2:
 - Events: Curated from RSS + filtered for relevance, NOT hardcoded
 - Industry News: Strong signal scoring + tier-1 source prioritization
 - Ambassador: "See article" fallback instead of "New Campaign"
 - Castings/Film/TV: Fixed category key mapping so feeds actually populate
-- All sections now respect volume limits
+- Gemini AI ranking: Intelligent article selection per category
 """
 
 import os
@@ -206,6 +206,131 @@ CLASSIFIERS = {
 }
 
 # =============================================================================
+# GEMINI AI RANKING
+# =============================================================================
+
+class GeminiRanker:
+    """Ranks articles by relevance using Google Gemini API."""
+
+    def __init__(self, api_key=None):
+        self.api_key = api_key or os.getenv("GEMINI_API_KEY", "")
+        self.base_url = "https://generativelanguage.googleapis.com/v1beta/models"
+        self.model = "gemini-2.5-flash"
+
+    def is_available(self):
+        return bool(self.api_key)
+
+    def rank(self, items, category, top_n=10):
+        """
+        Send articles to Gemini and get back the most relevant indices.
+        Falls back to keeping first N items if API fails.
+        """
+        if not self.api_key:
+            print(f"   ⚠️ No GEMINI_API_KEY set, using default ordering for {category}")
+            return items[:top_n]
+
+        if len(items) <= top_n:
+            return items
+
+        # Build prompt
+        prompt = self._build_prompt(items, category, top_n)
+
+        try:
+            response = requests.post(
+                f"{self.base_url}/{self.model}:generateContent?key={self.api_key}",
+                headers={"Content-Type": "application/json"},
+                json={
+                    "contents": [{"role": "user", "parts": [{"text": prompt}]}],
+                    "generationConfig": {
+                        "temperature": 0.2,
+                        "responseMimeType": "application/json"
+                    }
+                },
+                timeout=30
+            )
+
+            if response.status_code != 200:
+                print(f"   ⚠️ Gemini API error {response.status_code}: {response.text[:200]}")
+                return items[:top_n]
+
+            result = response.json()
+
+            # Extract text from response
+            if 'candidates' not in result or not result['candidates']:
+                print(f"   ⚠️ Gemini returned no candidates for {category}")
+                return items[:top_n]
+
+            content = result['candidates'][0]['content']['parts'][0]['text']
+            parsed = json.loads(content)
+            selected_indices = parsed.get('selected', list(range(top_n)))
+
+            # Validate indices
+            valid_indices = [i for i in selected_indices if isinstance(i, int) and 0 <= i < len(items)]
+
+            if not valid_indices:
+                print(f"   ⚠️ Gemini returned invalid indices for {category}, using defaults")
+                return items[:top_n]
+
+            ranked = [items[i] for i in valid_indices]
+            print(f"   🤖 Gemini ranked {category}: kept {len(ranked)}/{len(items)}")
+            return ranked[:top_n]
+
+        except json.JSONDecodeError as e:
+            print(f"   ⚠️ Gemini returned invalid JSON for {category}: {e}")
+            return items[:top_n]
+        except Exception as e:
+            print(f"   ⚠️ Gemini ranking failed for {category}: {e}")
+            return items[:top_n]
+
+    def _build_prompt(self, items, category, top_n):
+        category_labels = {
+            "events": "Key Award Shows & Events",
+            "industryNews": "Industry News",
+            "ambassadors": "Ambassador Announcements & Campaign Stars",
+            "partnerships": "Brand Partnerships",
+            "castings": "Ones to Watch / Key Castings",
+            "filmProjects": "Film Projects",
+            "tvProjects": "TV Projects",
+        }
+
+        label = category_labels.get(category, category)
+
+        prompt = f"""You are an expert curator for a VIP luxury fashion and entertainment industry newsletter.
+
+Your task: From the articles below, select the {top_n} MOST relevant and newsworthy items for the section "{label}".
+
+SELECTION CRITERIA (in order of priority):
+1. **Major luxury brands**: LVMH, Kering, Richemont, Hermès, Chanel, Dior, Gucci, Prada, Louis Vuitton, Cartier, Tiffany, Bulgari, L'Oréal, Estée Lauder, etc.
+2. **A-list talent**: Globally recognized actors, musicians, models, directors
+3. **Confirmed deals/announcements**: Avoid rumors, speculation, "might", "could", "reportedly"
+4. **Industry significance**: M&A, leadership changes, major strategic moves
+5. **Global impact**: Events/news with worldwide relevance, not local/niche
+
+IGNORE:
+- Rumors, speculation, unconfirmed reports
+- Minor local events or regional news
+- Repetitive announcements (same talent/brand multiple times)
+- Generic "best dressed" or "red carpet looks" articles
+- Articles lacking clear industry significance
+
+INSTRUCTIONS:
+- Return ONLY a valid JSON object with this exact format: {{"selected": [index1, index2, ...]}}
+- Indices are 0-based and must be from the provided list
+- Order matters: most important first
+- Select exactly {top_n} items (or fewer if list is shorter)
+
+ARTICLES:
+"""
+        for i, item in enumerate(items):
+            title = item.get('headline') or item.get('name') or item.get('talent', '')
+            source = item.get('source', 'Unknown')
+            prompt += f"\n[{i}] {title} (Source: {source})"
+
+        prompt += f"\n\nReturn JSON: {{"selected": [...]}}"
+        return prompt
+
+
+# =============================================================================
 # CORE CLASSES
 # =============================================================================
 
@@ -223,6 +348,7 @@ class NewsletterScraper:
             "filmProjects": [],
             "tvProjects": [],
         }
+        self.gemini = GeminiRanker()
 
     def fetch_all_feeds(self):
         print("\n" + "="*60)
@@ -344,7 +470,7 @@ class NewsletterScraper:
 
         self._apply_limits()
 
-        print("\n📊 FINAL RESULTS (after limits):")
+        print("\n📊 FINAL RESULTS (after limits + Gemini ranking):")
         for cat, items in self.categorized.items():
             print(f"   • {cat}: {len(items)} items")
 
@@ -375,16 +501,20 @@ class NewsletterScraper:
 
         relevance_score = sum(1 for signal in strong_signals if signal in text_lower)
 
-        # Accept if strong relevance OR tier-1 source with moderate relevance
         if relevance_score >= 2 or (is_tier1 and relevance_score >= 1):
             return self._format_item(item, "industryNews")
         return None
 
     def _apply_limits(self):
+        """Apply volume limits with Gemini AI ranking for intelligent selection."""
         for category, max_count in MAX_ITEMS.items():
-            if len(self.categorized[category]) > max_count:
-                self.categorized[category] = self.categorized[category][:max_count]
-                print(f"   ↳ {category}: trimmed to {max_count} items")
+            items = self.categorized[category]
+            if len(items) > max_count:
+                # Use Gemini to intelligently select the best ones
+                self.categorized[category] = self.gemini.rank(items, category, max_count)
+            # If exactly at or below limit, still rank for quality ordering
+            elif len(items) > 1 and self.gemini.is_available():
+                self.categorized[category] = self.gemini.rank(items, category, len(items))
 
     def _format_item(self, item, category):
         title = item['title'].strip()
@@ -394,9 +524,6 @@ class NewsletterScraper:
         source = item.get('source', '')
 
         if category == "events":
-            # Don't try to extract dates from headlines - they don't contain them
-            # Just use the article title as the event name
-            # The date will be empty or we can use the pub date
             pub_date = item.get('published')
             if pub_date:
                 date_str = pub_date.strftime('%b %d') if isinstance(pub_date, datetime) else "TBA"
@@ -409,11 +536,8 @@ class NewsletterScraper:
 
         elif category == "ambassadors":
             patterns = [
-                # "Zendaya for Lancome" or "Zendaya fronts Lancome campaign"
                 r'^([A-Z][a-zA-Z\s\.\'\-]+?)(?:\s+(?:for|fronts|stars in|is the new face of|is the face of|named|tapped as|tapped by|signs with|joins|becomes|is))\s+([A-Z][a-zA-Z\s&\'\-]+?)(?:\s+(?:as|brand|ambassador|face|muse|spokesperson|campaign|global|house|beauty|fashion))',
-                # "Lancome taps Zendaya" or "Lancome names Zendaya"
                 r'^([A-Z][a-zA-Z\s&\'\-]+?)(?:\s+(?:taps|names|signs|welcomes|casts|chooses|picks))\s+([A-Z][a-zA-Z\s\.\'\-]+?)(?:\s+(?:as|for|to|its|global|house|brand|beauty|fashion))',
-                # "Zendaya x Lancome" or "Zendaya teams up with Lancome"
                 r'^([A-Z][a-zA-Z\s\.\'\-]+?)(?:\s+(?:x|teams up with|collaborates with|partners with))\s+([A-Z][a-zA-Z\s&\'\-]+)',
             ]
 
@@ -439,10 +563,8 @@ class NewsletterScraper:
                     elif g2_has_brand and not g1_has_brand:
                         return {"talent": g1, "brand": g2, "link": link, "source": source}
                     else:
-                        # Both or neither look like brands - use first as talent (usually person name)
                         return {"talent": g1, "brand": g2, "link": link, "source": source}
 
-            # Fallback: show full headline + "See article" instead of generic "New Campaign"
             return {"talent": title[:60], "brand": "See article", "link": link, "source": source}
 
         elif category == "partnerships":
@@ -656,7 +778,7 @@ def save_newsletter(html, filename=None):
 
 def main():
     print("=" * 60)
-    print("VIP & INDUSTRY NEWS - AUTOMATED NEWSLETTER SYSTEM v3.2")
+    print("VIP & INDUSTRY NEWS - AUTOMATED NEWSLETTER SYSTEM v3.3")
     print("=" * 60)
     print(f"📅 Running: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
 
