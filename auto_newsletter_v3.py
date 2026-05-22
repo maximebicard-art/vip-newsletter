@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
 """
-VIP & Industry News - AUTOMATED NEWSLETTER SYSTEM v3.1
+VIP & Industry News - AUTOMATED NEWSLETTER SYSTEM v3.2
 ======================================================
-Fixes from v3.0:
-- Better event handling (no more false date extraction)
-- Improved CSS inline styles for email client compatibility
-- Source links and volume limits maintained
+Fixes from v3.1:
+- Events: Curated from RSS + filtered for relevance, NOT hardcoded
+- Industry News: Strong signal scoring + tier-1 source prioritization
+- Ambassador: "See article" fallback instead of "New Campaign"
+- Castings/Film/TV: Fixed category key mapping so feeds actually populate
+- All sections now respect volume limits
 """
 
 import os
@@ -96,6 +98,11 @@ RSS_SOURCES = {
         {"url": "https://www.hollywoodreporter.com/c/tv/feed", "source": "THR TV"},
         {"url": "https://variety.com/v/tv/feed", "source": "Variety TV"},
     ],
+    "film": [
+        {"url": "https://deadline.com/category/film/feed/", "source": "Deadline Film"},
+        {"url": "https://variety.com/v/film/feed", "source": "Variety Film"},
+        {"url": "https://www.hollywoodreporter.com/c/movies/feed", "source": "THR Film"},
+    ],
     "ambassadors": [
         {"url": "https://wwd.com/feed", "source": "WWD"},
         {"url": "https://fashionista.com/.rss/excerpt/", "source": "Fashionista"},
@@ -111,6 +118,17 @@ RSS_SOURCES = {
         {"url": "https://fashionista.com/.rss/excerpt/", "source": "Fashionista"},
         {"url": "https://www.vogue.com/feed/rss", "source": "Vogue"},
     ],
+}
+
+# Map RSS category keys to categorized dict keys
+CATEGORY_MAP = {
+    "events": "events",
+    "industry_news": "industryNews",
+    "casting": "castings",
+    "tv": "tvProjects",
+    "film": "filmProjects",
+    "ambassadors": "ambassadors",
+    "partnerships": "partnerships",
 }
 
 # =============================================================================
@@ -154,7 +172,7 @@ CLASSIFIERS = {
         ],
         "exclude": ["rumored", "speculated", "might", "could", "allegedly"],
     },
-    "casting": {
+    "castings": {
         "keywords": [
             "cast in", "joins cast", "set to star", "lands role", "to play",
             "in talks", "signed on", "boarded", "attached to", "to portray",
@@ -166,7 +184,7 @@ CLASSIFIERS = {
         ],
         "exclude": ["rumored", "speculated", "might", "could", "allegedly", "reportedly in talks"],
     },
-    "film_projects": {
+    "filmProjects": {
         "keywords": [
             "movie", "film", "feature", "biopic", "sequel", "prequel",
             "franchise", "adaptation", "remake", "reboot", "spinoff",
@@ -175,7 +193,7 @@ CLASSIFIERS = {
         ],
         "must_have": ["cast", "star", "direct", "produce", "write", "film", "movie"],
     },
-    "tv_projects": {
+    "tvProjects": {
         "keywords": [
             "series", "season", "episode", "show", "tv", "television",
             "streaming", "netflix", "hbo", "hulu", "apple tv", "amazon",
@@ -213,10 +231,11 @@ class NewsletterScraper:
         total = 0
         failed = []
 
-        for category, sources in RSS_SOURCES.items():
+        for rss_category, sources in RSS_SOURCES.items():
+            target_category = CATEGORY_MAP.get(rss_category, rss_category)
             for source in sources:
                 try:
-                    print(f"   → {source['source']} ({category})")
+                    print(f"   → {source['source']} ({rss_category} → {target_category})")
                     feed = feedparser.parse(source['url'])
 
                     if hasattr(feed, 'bozo_exception') and feed.bozo_exception:
@@ -233,7 +252,7 @@ class NewsletterScraper:
                             "link": entry.get('link', ''),
                             "published": pub_date,
                             "source": source['source'],
-                            "category_hint": category,
+                            "category_hint": target_category,
                         }
                         self.raw_items.append(item)
                         total += 1
@@ -262,32 +281,60 @@ class NewsletterScraper:
         for item in self.raw_items:
             text = f"{item['title']} {item['summary']}".lower()
             assigned = False
+            hint = item.get('category_hint', '')
 
-            for category, rules in CLASSIFIERS.items():
+            # If item has a category hint from RSS source, try that first
+            if hint in CLASSIFIERS:
+                rules = CLASSIFIERS[hint]
                 score = 0
                 keywords = rules.get('keywords', [])
                 exclude = rules.get('exclude', [])
                 must_have = rules.get('must_have', [])
 
                 if any(exc.lower() in text for exc in exclude):
-                    continue
+                    pass  # Skip this category
+                elif must_have and not any(mh.lower() in text for mh in must_have):
+                    pass  # Skip - missing must-have keywords
+                else:
+                    for kw in keywords:
+                        if kw.lower() in text:
+                            score += 1
+                    if score >= 1:
+                        formatted = self._format_item(item, hint)
+                        if formatted and not self._is_duplicate(formatted, hint):
+                            self.categorized[hint].append(formatted)
+                            assigned = True
 
-                if must_have and not any(mh.lower() in text for mh in must_have):
-                    continue
-
-                for kw in keywords:
-                    if kw.lower() in text:
-                        score += 1
-
-                if score >= 1:
-                    formatted = self._format_item(item, category)
-                    if formatted and not self._is_duplicate(formatted, category):
-                        self.categorized[category].append(formatted)
-                        assigned = True
-                        break
-
+            # If not assigned by hint, try all classifiers
             if not assigned:
-                formatted = self._format_item(item, "industryNews")
+                for category, rules in CLASSIFIERS.items():
+                    if category == hint:
+                        continue  # Already tried
+                    score = 0
+                    keywords = rules.get('keywords', [])
+                    exclude = rules.get('exclude', [])
+                    must_have = rules.get('must_have', [])
+
+                    if any(exc.lower() in text for exc in exclude):
+                        continue
+
+                    if must_have and not any(mh.lower() in text for mh in must_have):
+                        continue
+
+                    for kw in keywords:
+                        if kw.lower() in text:
+                            score += 1
+
+                    if score >= 1:
+                        formatted = self._format_item(item, category)
+                        if formatted and not self._is_duplicate(formatted, category):
+                            self.categorized[category].append(formatted)
+                            assigned = True
+                            break
+
+            # Fallback to industry news with strict relevance check
+            if not assigned:
+                formatted = self._format_industry_news(item)
                 if formatted and not self._is_duplicate(formatted, "industryNews"):
                     self.categorized["industryNews"].append(formatted)
 
@@ -302,6 +349,36 @@ class NewsletterScraper:
             print(f"   • {cat}: {len(items)} items")
 
         return self
+
+    def _format_industry_news(self, item):
+        """Format item as industry news only if it passes relevance scoring."""
+        text_lower = (f"{item['title']} {item['summary']}").lower()
+
+        strong_signals = [
+            "acquires", "merger", "acquisition", "ipo", "earnings", "revenue",
+            "appointed", "ceo", "creative director", "steps down", "resigns",
+            "launches", "expansion", "store opening", "flagship", "partnership",
+            "sustainability", "carbon neutral", "diversity", "inclusion",
+            "lvmh", "kering", "richemont", "hermès", "chanel", "dior",
+            "l'oréal", "estée lauder", "shiseido", "coty",
+            "sales", "growth", "profit", "billion", "million", "market",
+            "trend", "forecast", "report", "study", "survey",
+            "digital", "e-commerce", "metaverse", "nft", "ai",
+            "supply chain", "manufacturing", "retail", "wholesale",
+            "quarterly", "annual", "fiscal", "revenue", "profit",
+            "merger", "acquisition", "investment", "valuation",
+            "bankruptcy", "restructuring", "layoffs", "hiring",
+        ]
+
+        tier1_sources = ["WWD", "BoF", "Vogue", "Vogue France", "Drapers", "Business of Fashion"]
+        is_tier1 = item.get('source') in tier1_sources
+
+        relevance_score = sum(1 for signal in strong_signals if signal in text_lower)
+
+        # Accept if strong relevance OR tier-1 source with moderate relevance
+        if relevance_score >= 2 or (is_tier1 and relevance_score >= 1):
+            return self._format_item(item, "industryNews")
+        return None
 
     def _apply_limits(self):
         for category, max_count in MAX_ITEMS.items():
@@ -332,14 +409,41 @@ class NewsletterScraper:
 
         elif category == "ambassadors":
             patterns = [
-                r'([A-Z][a-zA-Z\s\.\'\-]+)(?:\s+(?:is|as|for|joins|signs|tapped|named|becomes)).*?([A-Z][a-zA-Z\s&\'\-]+?)(?:\s+(?:as|brand|ambassador|face|muse|spokesperson|campaign))',
-                r'([A-Z][a-zA-Z\s\.\'\-]+)(?:\s+(?:fronts|stars in|leads)).*?([A-Z][a-zA-Z\s&\'\-]+?)(?:\s+campaign)',
+                # "Zendaya for Lancome" or "Zendaya fronts Lancome campaign"
+                r'^([A-Z][a-zA-Z\s\.\'\-]+?)(?:\s+(?:for|fronts|stars in|is the new face of|is the face of|named|tapped as|tapped by|signs with|joins|becomes|is))\s+([A-Z][a-zA-Z\s&\'\-]+?)(?:\s+(?:as|brand|ambassador|face|muse|spokesperson|campaign|global|house|beauty|fashion))',
+                # "Lancome taps Zendaya" or "Lancome names Zendaya"
+                r'^([A-Z][a-zA-Z\s&\'\-]+?)(?:\s+(?:taps|names|signs|welcomes|casts|chooses|picks))\s+([A-Z][a-zA-Z\s\.\'\-]+?)(?:\s+(?:as|for|to|its|global|house|brand|beauty|fashion))',
+                # "Zendaya x Lancome" or "Zendaya teams up with Lancome"
+                r'^([A-Z][a-zA-Z\s\.\'\-]+?)(?:\s+(?:x|teams up with|collaborates with|partners with))\s+([A-Z][a-zA-Z\s&\'\-]+)',
             ]
+
             for pattern in patterns:
-                match = re.search(pattern, title)
+                match = re.search(pattern, title, re.IGNORECASE)
                 if match:
-                    return {"talent": match.group(1).strip(), "brand": match.group(2).strip(), "link": link, "source": source}
-            return {"talent": title[:50], "brand": "New Campaign", "link": link, "source": source}
+                    g1, g2 = match.group(1).strip(), match.group(2).strip()
+                    brand_words = ['lvmh', 'kering', 'l\'oréal', 'estée lauder', 'chanel', 'dior', 
+                                   'gucci', 'prada', 'lv', 'louis vuitton', 'hermès', 'cartier', 
+                                   'tiffany', 'bulgari', 'lancome', 'ysl', 'givenchy', 'fendi',
+                                   'celine', 'balenciaga', 'bottega veneta', 'valentino',
+                                   'armani', 'burberry', 'versace', 'dolce', 'gabbana',
+                                   'tom ford', 'marc jacobs', 'coach', 'michael kors',
+                                   'ralph lauren', 'tory burch', 'kate spade', 'jimmy choo']
+                    g1_lower = g1.lower()
+                    g2_lower = g2.lower()
+
+                    g1_has_brand = any(b in g1_lower for b in brand_words)
+                    g2_has_brand = any(b in g2_lower for b in brand_words)
+
+                    if g1_has_brand and not g2_has_brand:
+                        return {"talent": g2, "brand": g1, "link": link, "source": source}
+                    elif g2_has_brand and not g1_has_brand:
+                        return {"talent": g1, "brand": g2, "link": link, "source": source}
+                    else:
+                        # Both or neither look like brands - use first as talent (usually person name)
+                        return {"talent": g1, "brand": g2, "link": link, "source": source}
+
+            # Fallback: show full headline + "See article" instead of generic "New Campaign"
+            return {"talent": title[:60], "brand": "See article", "link": link, "source": source}
 
         elif category == "partnerships":
             separators = [' x ', ' X ', ' × ', ' Collaborates With ', ' Partners With ', ' Teams Up With ', ' Joins Forces With ']
@@ -362,6 +466,8 @@ class NewsletterScraper:
             if item.get('talent') and e.get('talent') == item.get('talent'):
                 return True
             if item.get('name') and e.get('name') == item.get('name'):
+                return True
+            if item.get('partner1') and e.get('partner1') == item.get('partner1'):
                 return True
         return False
 
@@ -550,7 +656,7 @@ def save_newsletter(html, filename=None):
 
 def main():
     print("=" * 60)
-    print("VIP & INDUSTRY NEWS - AUTOMATED NEWSLETTER SYSTEM v3.1")
+    print("VIP & INDUSTRY NEWS - AUTOMATED NEWSLETTER SYSTEM v3.2")
     print("=" * 60)
     print(f"📅 Running: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
 
