@@ -2,7 +2,6 @@ name: Weekly VIP Newsletter
 
 on:
   schedule:
-    # Run every Friday at 9:00 AM UTC
     - cron: '0 9 * * 5'
   workflow_dispatch:
 
@@ -59,11 +58,3 @@ jobs:
       with:
         name: newsletter-${{ github.run_id }}
         path: newsletter_*.html
-
-    - name: Commit and push changes
-      run: |
-        git config --global user.name "github-actions[bot]"
-        git config --global user.email "github-actions[bot]@users.noreply.github.com"
-        git add -A
-        git diff --staged --quiet || git commit -m "Auto-update: newsletter files [skip ci]"
-        git push
