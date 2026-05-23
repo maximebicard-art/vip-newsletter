@@ -1,13 +1,15 @@
 #!/usr/bin/env python3
 """
-VIP & Industry News - AUTOMATED NEWSLETTER SYSTEM v3.3
+VIP & Industry News - AUTOMATED NEWSLETTER SYSTEM v3.4
 ======================================================
-Fixes from v3.2:
-- Events: Curated from RSS + filtered for relevance, NOT hardcoded
-- Industry News: Strong signal scoring + tier-1 source prioritization
-- Ambassador: "See article" fallback instead of "New Campaign"
-- Castings/Film/TV: Fixed category key mapping so feeds actually populate
-- Gemini AI ranking: Intelligent article selection per category
+Fixes from v3.3:
+- Events: Sorted chronologically, cleaned of non-event content
+- Industry News: Tighter relevance scoring, better source filtering
+- Ambassadors: Fixed regex extraction, removed truncation, better classifier
+- Partnerships: Fixed separator detection, removed truncation
+- Castings: Removed Elle Fashion/Beauty from sources, fixed classifier
+- Film/TV: Removed truncation, better must_have keywords
+- All sections: Gemini ranking with improved prompt
 """
 
 import os
@@ -67,7 +69,7 @@ MAX_ITEMS = {
 }
 
 # =============================================================================
-# RSS FEED SOURCES
+# RSS FEED SOURCES - FIXED
 # =============================================================================
 
 RSS_SOURCES = {
@@ -80,18 +82,18 @@ RSS_SOURCES = {
         {"url": "https://wwd.com/feed", "source": "WWD"},
         {"url": "https://www.businessoffashion.com/arc/outbound-feeds/rss/", "source": "BoF"},
         {"url": "https://fashionista.com/.rss/excerpt/", "source": "Fashionista"},
-        {"url": "https://www.eonline.com/news/rss", "source": "E! Online"},
         {"url": "https://www.vogue.com/feed/rss", "source": "Vogue"},
         {"url": "https://www.vogue.fr/feed/rss", "source": "Vogue France"},
         {"url": "https://drapersonline.com/feed", "source": "Drapers"},
-        {"url": "https://www.elle.com/rss/fashion.xml/", "source": "Elle Fashion"},
-        {"url": "https://www.elle.com/rss/beauty.xml/", "source": "Elle Beauty"},
+        # REMOVED: E! Online (too celebrity gossip focused)
+        # REMOVED: Elle Fashion/Beauty (product/trend focused, not industry)
     ],
     "casting": [
         {"url": "https://deadline.com/feed/", "source": "Deadline"},
         {"url": "https://deadline.com/category/casting/feed/", "source": "Deadline Casting"},
         {"url": "https://variety.com/v/film/feed", "source": "Variety Film"},
         {"url": "https://www.hollywoodreporter.com/feed", "source": "THR"},
+        # REMOVED: Elle Fashion/Beauty - was causing fashion articles in castings
     ],
     "tv": [
         {"url": "https://deadline.com/category/tv/feed/", "source": "Deadline TV"},
@@ -106,11 +108,11 @@ RSS_SOURCES = {
     "ambassadors": [
         {"url": "https://wwd.com/feed", "source": "WWD"},
         {"url": "https://fashionista.com/.rss/excerpt/", "source": "Fashionista"},
-        {"url": "https://www.eonline.com/news/rss", "source": "E! Online"},
         {"url": "https://www.popsugar.com/fashion/feed", "source": "POPSUGAR Fashion"},
         {"url": "https://www.popsugar.com/beauty/feed", "source": "POPSUGAR Beauty"},
         {"url": "https://www.vogue.com/feed/rss", "source": "Vogue"},
         {"url": "https://www.vogue.fr/feed/rss", "source": "Vogue France"},
+        # REMOVED: E! Online (too gossip focused)
     ],
     "partnerships": [
         {"url": "https://wwd.com/feed", "source": "WWD"},
@@ -132,7 +134,7 @@ CATEGORY_MAP = {
 }
 
 # =============================================================================
-# CONTENT CLASSIFIERS
+# CONTENT CLASSIFIERS - TIGHTENED
 # =============================================================================
 
 CLASSIFIERS = {
@@ -144,45 +146,78 @@ CLASSIFIERS = {
             "fashion week", "cruise show", "resort show", "couture",
             "ballet", "opera", "opening night", "benefit", "fundraiser",
             "after party", "red carpet", "afterparty", "opening",
+            "tony awards", "gotham awards", "acm awards", "cmt awards",
         ],
-        "exclude": ["after", "review", "recap", "best dressed", "worst dressed", "red carpet looks", "prediction", "predictions", "contender", "contenders", "nomination", "nominations"],
+        "exclude": [
+            "review", "recap", "best dressed", "worst dressed", "red carpet looks",
+            "prediction", "predictions", "contender", "contenders",
+            "nomination", "nominations", "nominees", "behind the scenes",
+            "makeup", "hair", "beauty look", "outfit", "dress", "wore",
+            "interview", "profile", "q&a", "talks about", "reflects on",
+            "cast in", "joins cast", "to star", "signs with", "deal",
+        ],
     },
     "ambassadors": {
         "keywords": [
             "brand ambassador", "named ambassador", "new face of", "face of",
-            "signs with", "signs deal", "partnership with", "collaboration with",
-            "tapped by", "tapped for", "campaign star", "new campaign",
-            "global ambassador", "house ambassador", "beauty ambassador",
-            "fashion ambassador", "named face", "new spokesperson",
-            "new muse", "brand muse", "newest ambassador", "latest ambassador",
-            "joins", "as ambassador", "as the face", "as new face",
-            "for campaign", "fronts campaign", "stars in campaign",
+            "signs with", "signs deal", "tapped by", "tapped for", "campaign star",
+            "new campaign", "global ambassador", "house ambassador",
+            "beauty ambassador", "fashion ambassador", "named face",
+            "new spokesperson", "new muse", "brand muse", "newest ambassador",
+            "latest ambassador", "joins as ambassador", "as the face",
+            "as new face", "for campaign", "fronts campaign", "stars in campaign",
             "new deal with", "partners with", "collaborates with",
-            "x ", "teams up with", "joins forces with",
+            "teams up with", "joins forces with", "becomes ambassador",
+            "is ambassador", "named the face", "tapped as", "tapped to",
         ],
-        "exclude": ["rumored", "speculated", "might", "could", "reportedly considering", "allegedly"],
+        "exclude": [
+            "rumored", "speculated", "might", "could", "reportedly considering",
+            "allegedly", "reportedly in talks", "eying", "circling",
+            "nominations", "nominees", "awards", "wins", "won", "accepts",
+            "interview", "profile", "q&a", "talks about", "reflects on",
+            "review", "recap", "best dressed", "makeup", "hair",
+            "festival", "premiere", "screening", "gala", "ceremony",
+        ],
     },
     "partnerships": {
         "keywords": [
-            "collaboration", "capsule collection", "x ", "partners with",
-            "teams up with", "joins forces", "limited edition", "drop",
+            "collaboration", "capsule collection", "limited edition", "drop",
             "exclusive collection", "debut collection", "联名", "collab",
             "special collection", "co-branded", "co-designed",
             "unveils collection with", "launches collection with",
+            "partnership with", "teams up with", "joins forces with",
+            "x ", "× ", " x ", " × ",
         ],
-        "exclude": ["rumored", "speculated", "might", "could", "allegedly"],
+        "exclude": [
+            "rumored", "speculated", "might", "could", "allegedly",
+            "reportedly considering", "eying", "circling",
+            "interview", "profile", "q&a", "review", "recap",
+            "nominations", "nominees", "awards", "wins", "won",
+            "cast in", "joins cast", "to star", "signs with", "deal",
+        ],
+        "must_have": ["collection", "collaboration", "partnership", "capsule",
+                      "limited edition", "exclusive", "drop", "co-branded",
+                      "x ", "× ", "teams up", "joins forces"],
     },
     "castings": {
         "keywords": [
             "cast in", "joins cast", "set to star", "lands role", "to play",
             "in talks", "signed on", "boarded", "attached to", "to portray",
-            "cast as", "joins ", "set to lead", "toplines", "in final talks",
+            "cast as", "set to lead", "toplines", "in final talks",
             "replacing", "exits", "departs", "steps down", "new host",
             "to direct", "to produce", "writing ", "directing ",
             "returns for", "returning to", "back for", "reprises role",
             "to star in", "to appear in", "to feature in", "to cameo in",
+            "joins ", "added to", "boards ", "set to join",
         ],
-        "exclude": ["rumored", "speculated", "might", "could", "allegedly", "reportedly in talks"],
+        "exclude": [
+            "rumored", "speculated", "might", "could", "allegedly",
+            "reportedly in talks", "eying", "circling",
+            "review", "recap", "best dressed", "worst dressed",
+            "makeup", "hair", "beauty", "skincare", "fashion trend",
+            "outfit", "dress", "wore", "style", "look",
+            "interview", "profile", "q&a", "talks about",
+        ],
     },
     "filmProjects": {
         "keywords": [
@@ -190,8 +225,18 @@ CLASSIFIERS = {
             "franchise", "adaptation", "remake", "reboot", "spinoff",
             "in production", "wraps production", "starts filming",
             "begins shoot", "wraps shoot", "in theaters", "release date",
+            "greenlit", "picked up", "ordered", "in development",
         ],
-        "must_have": ["cast", "star", "direct", "produce", "write", "film", "movie"],
+        "must_have": ["film", "movie", "feature", "biopic", "sequel", "prequel",
+                      "franchise", "adaptation", "remake", "reboot", "spinoff",
+                      "production", "filming", "shoot", "theaters", "release",
+                      "greenlit", "development"],
+        "exclude": [
+            "review", "recap", "critics", "rating", "box office prediction",
+            "interview", "profile", "q&a", "talks about", "reflects on",
+            "makeup", "hair", "beauty look", "outfit", "dress", "wore",
+            "festival", "premiere", "screening", "gala", "ceremony",
+        ],
     },
     "tvProjects": {
         "keywords": [
@@ -201,12 +246,21 @@ CLASSIFIERS = {
             "renewed", "ordered", "greenlit", "picked up", "in development",
             "pilot", "limited series", "anthology",
         ],
-        "must_have": ["cast", "star", "joins", "renewed", "ordered", "greenlit", "picks up"],
+        "must_have": ["renewed", "ordered", "greenlit", "picked up", "pilot",
+                      "series", "season", "development", "netflix", "hbo",
+                      "hulu", "apple tv", "amazon", "peacock", "paramount",
+                      "disney+", "starz", "fx"],
+        "exclude": [
+            "review", "recap", "critics", "rating",
+            "interview", "profile", "q&a", "talks about", "reflects on",
+            "makeup", "hair", "beauty look", "outfit", "dress", "wore",
+            "cast in", "joins cast", "to star", "lands role", "to play",
+        ],
     },
 }
 
 # =============================================================================
-# GEMINI AI RANKING
+# GEMINI AI RANKING - IMPROVED
 # =============================================================================
 
 class GeminiRanker:
@@ -232,7 +286,6 @@ class GeminiRanker:
         if len(items) <= top_n:
             return items
 
-        # Build prompt
         prompt = self._build_prompt(items, category, top_n)
 
         try:
@@ -242,7 +295,7 @@ class GeminiRanker:
                 json={
                     "contents": [{"role": "user", "parts": [{"text": prompt}]}],
                     "generationConfig": {
-                        "temperature": 0.2,
+                        "temperature": 0.1,
                         "responseMimeType": "application/json"
                     }
                 },
@@ -255,7 +308,6 @@ class GeminiRanker:
 
             result = response.json()
 
-            # Extract text from response
             if 'candidates' not in result or not result['candidates']:
                 print(f"   ⚠️ Gemini returned no candidates for {category}")
                 return items[:top_n]
@@ -264,7 +316,6 @@ class GeminiRanker:
             parsed = json.loads(content)
             selected_indices = parsed.get('selected', list(range(top_n)))
 
-            # Validate indices
             valid_indices = [i for i in selected_indices if isinstance(i, int) and 0 <= i < len(items)]
 
             if not valid_indices:
@@ -295,9 +346,9 @@ class GeminiRanker:
 
         label = category_labels.get(category, category)
 
-        prompt = f"""You are an expert curator for a VIP luxury fashion and entertainment industry newsletter.
+        prompt = """You are an expert curator for a VIP luxury fashion and entertainment industry newsletter.
 
-Your task: From the articles below, select the {top_n} MOST relevant and newsworthy items for the section "{label}".
+Your task: From the articles below, select the """ + str(top_n) + """ MOST relevant and newsworthy items for the section """ + label + """.
 
 SELECTION CRITERIA (in order of priority):
 1. **Major luxury brands**: LVMH, Kering, Richemont, Hermès, Chanel, Dior, Gucci, Prada, Louis Vuitton, Cartier, Tiffany, Bulgari, L'Oréal, Estée Lauder, etc.
@@ -312,19 +363,21 @@ IGNORE:
 - Repetitive announcements (same talent/brand multiple times)
 - Generic "best dressed" or "red carpet looks" articles
 - Articles lacking clear industry significance
+- Interviews and profiles (unless major breaking news)
+- Product reviews and recaps
 
 INSTRUCTIONS:
-- Return ONLY a valid JSON object with this exact format: {{"selected": [index1, index2, ...]}}
+- Return ONLY a valid JSON object with this exact format: {"selected": [index1, index2, ...]}
 - Indices are 0-based and must be from the provided list
 - Order matters: most important first
-- Select exactly {top_n} items (or fewer if list is shorter)
+- Select exactly """ + str(top_n) + """ items (or fewer if list is shorter)
 
 ARTICLES:
 """
         for i, item in enumerate(items):
-            title = item.get('headline') or item.get('name') or item.get('talent', '')
+            title = item.get('headline') or item.get('name') or item.get('talent', '') or item.get('partner1', '')
             source = item.get('source', 'Unknown')
-            prompt += f"\n[{i}] {title} (Source: {source})"
+            prompt += "\n[" + str(i) + "] " + title + " (Source: " + source + ")"
 
         prompt += "\n\nReturn JSON: {\"selected\": [...]}"
         return prompt
@@ -417,7 +470,9 @@ class NewsletterScraper:
                 exclude = rules.get('exclude', [])
                 must_have = rules.get('must_have', [])
 
-                if any(exc.lower() in text for exc in exclude):
+                # Check excludes first
+                excluded = any(exc.lower() in text for exc in exclude)
+                if excluded:
                     pass  # Skip this category
                 elif must_have and not any(mh.lower() in text for mh in must_have):
                     pass  # Skip - missing must-have keywords
@@ -496,12 +551,21 @@ class NewsletterScraper:
             "bankruptcy", "restructuring", "layoffs", "hiring",
         ]
 
+        weak_signals = [
+            "boot", "shoe", "sneaker", "bag", "dress", "outfit",
+            "makeup", "lipstick", "skincare", "fragrance", "perfume",
+            "collection", "lookbook", "runway", "trend", "style",
+        ]
+
         tier1_sources = ["WWD", "BoF", "Vogue", "Vogue France", "Drapers", "Business of Fashion"]
         is_tier1 = item.get('source') in tier1_sources
 
         relevance_score = sum(1 for signal in strong_signals if signal in text_lower)
+        weakness_score = sum(1 for signal in weak_signals if signal in text_lower)
 
-        if relevance_score >= 2 or (is_tier1 and relevance_score >= 1):
+        # Accept if strong relevance OR tier-1 source with moderate relevance
+        # Reject if too many weak signals (product-focused)
+        if (relevance_score >= 2 or (is_tier1 and relevance_score >= 1)) and weakness_score < 3:
             return self._format_item(item, "industryNews")
         return None
 
@@ -509,12 +573,33 @@ class NewsletterScraper:
         """Apply volume limits with Gemini AI ranking for intelligent selection."""
         for category, max_count in MAX_ITEMS.items():
             items = self.categorized[category]
+
+            # Sort events chronologically
+            if category == "events":
+                items = self._sort_events_chronologically(items)
+
             if len(items) > max_count:
-                # Use Gemini to intelligently select the best ones
                 self.categorized[category] = self.gemini.rank(items, category, max_count)
-            # If exactly at or below limit, still rank for quality ordering
             elif len(items) > 1 and self.gemini.is_available():
                 self.categorized[category] = self.gemini.rank(items, category, len(items))
+            else:
+                self.categorized[category] = items[:max_count]
+
+    def _sort_events_chronologically(self, items):
+        """Sort events by date, putting TBA items at the end."""
+        def sort_key(item):
+            date_str = item.get('date', 'TBA')
+            if date_str == 'TBA':
+                return (1, datetime.max)
+            try:
+                # Parse "May 22", "Jun 08", etc.
+                current_year = datetime.now().year
+                dt = datetime.strptime(f"{date_str} {current_year}", "%b %d %Y")
+                return (0, dt)
+            except:
+                return (1, datetime.max)
+
+        return sorted(items, key=sort_key)
 
     def _format_item(self, item, category):
         title = item['title'].strip()
@@ -535,48 +620,117 @@ class NewsletterScraper:
             return {"headline": title, "detail": summary, "link": link, "source": source}
 
         elif category == "ambassadors":
-            patterns = [
-                r'^([A-Z][a-zA-Z\s\.\'\-]+?)(?:\s+(?:for|fronts|stars in|is the new face of|is the face of|named|tapped as|tapped by|signs with|joins|becomes|is))\s+([A-Z][a-zA-Z\s&\'\-]+?)(?:\s+(?:as|brand|ambassador|face|muse|spokesperson|campaign|global|house|beauty|fashion))',
-                r'^([A-Z][a-zA-Z\s&\'\-]+?)(?:\s+(?:taps|names|signs|welcomes|casts|chooses|picks))\s+([A-Z][a-zA-Z\s\.\'\-]+?)(?:\s+(?:as|for|to|its|global|house|brand|beauty|fashion))',
-                r'^([A-Z][a-zA-Z\s\.\'\-]+?)(?:\s+(?:x|teams up with|collaborates with|partners with))\s+([A-Z][a-zA-Z\s&\'\-]+)',
-            ]
+            # IMPROVED: Try multiple patterns with better brand detection
+            result = self._extract_ambassador(title, link, source)
+            if result:
+                return result
 
-            for pattern in patterns:
-                match = re.search(pattern, title, re.IGNORECASE)
-                if match:
-                    g1, g2 = match.group(1).strip(), match.group(2).strip()
-                    brand_words = ['lvmh', 'kering', 'l\'oréal', 'estée lauder', 'chanel', 'dior', 
-                                   'gucci', 'prada', 'lv', 'louis vuitton', 'hermès', 'cartier', 
-                                   'tiffany', 'bulgari', 'lancome', 'ysl', 'givenchy', 'fendi',
-                                   'celine', 'balenciaga', 'bottega veneta', 'valentino',
-                                   'armani', 'burberry', 'versace', 'dolce', 'gabbana',
-                                   'tom ford', 'marc jacobs', 'coach', 'michael kors',
-                                   'ralph lauren', 'tory burch', 'kate spade', 'jimmy choo']
-                    g1_lower = g1.lower()
-                    g2_lower = g2.lower()
-
-                    g1_has_brand = any(b in g1_lower for b in brand_words)
-                    g2_has_brand = any(b in g2_lower for b in brand_words)
-
-                    if g1_has_brand and not g2_has_brand:
-                        return {"talent": g2, "brand": g1, "link": link, "source": source}
-                    elif g2_has_brand and not g1_has_brand:
-                        return {"talent": g1, "brand": g2, "link": link, "source": source}
-                    else:
-                        return {"talent": g1, "brand": g2, "link": link, "source": source}
-
-            return {"talent": title[:60], "brand": "See article", "link": link, "source": source}
+            # Fallback: show full headline + "See article"
+            return {"talent": title, "brand": "See article", "link": link, "source": source}
 
         elif category == "partnerships":
-            separators = [' x ', ' X ', ' × ', ' Collaborates With ', ' Partners With ', ' Teams Up With ', ' Joins Forces With ']
-            for sep in separators:
-                if sep in title:
-                    parts = title.split(sep, 1)
-                    return {"partner1": parts[0].strip(), "partner2": parts[1].strip(), "link": link, "source": source}
-            return {"partner1": title[:40], "partner2": "Collaboration", "link": link, "source": source}
+            result = self._extract_partnership(title, link, source)
+            if result:
+                return result
+            return {"partner1": title, "partner2": "See article", "link": link, "source": source}
 
         elif category in ["castings", "filmProjects", "tvProjects"]:
-            return {"talent": title[:60], "project": summary[:100], "link": link, "source": source}
+            # NO MORE TRUNCATION - use full title
+            return {"talent": title, "project": summary[:120] + "..." if len(summary) > 120 else summary, "link": link, "source": source}
+
+        return None
+
+    def _extract_ambassador(self, title, link, source):
+        """Extract talent and brand from ambassador announcement headlines."""
+
+        # Pattern 1: "[Talent] for [Brand]" / "[Talent] is the new face of [Brand]"
+        # Pattern 2: "[Brand] taps [Talent]" / "[Brand] names [Talent]"
+        # Pattern 3: "[Talent] x [Brand]" (collaboration-style)
+
+        patterns = [
+            # "Zendaya for Lancome", "Zendaya is the face of Lancome", "Zendaya named Lancome ambassador"
+            r'^([A-Z][a-zA-Z\s\.\'\-]+?)(?:\s+(?:for|is|becomes|named|tapped as|tapped by|signs with|joins|fronts|stars in|is the new face of|is the face of))\s+([A-Z][a-zA-Z\s&\'\-]+?)(?:\s+(?:as|brand|ambassador|face|muse|spokesperson|campaign|global|house|beauty|fashion|\'s|$))',
+            # "Lancome taps Zendaya", "Lancome names Zendaya as ambassador"
+            r'^([A-Z][a-zA-Z\s&\'\-]+?)(?:\s+(?:taps|names|signs|welcomes|casts|chooses|picks|appoints))\s+([A-Z][a-zA-Z\s\.\'\-]+?)(?:\s+(?:as|for|to|its|global|house|brand|beauty|fashion|ambassador|face|muse|spokesperson|$))',
+            # "Zendaya teams up with Lancome"
+            r'^([A-Z][a-zA-Z\s\.\'\-]+?)(?:\s+(?:teams up with|collaborates with|partners with))\s+([A-Z][a-zA-Z\s&\'\-]+?)(?:\s+(?:for|on|to|as|\'s|$))',
+        ]
+
+        for pattern in patterns:
+            match = re.search(pattern, title, re.IGNORECASE)
+            if match:
+                g1, g2 = match.group(1).strip(), match.group(2).strip()
+
+                # Determine which is talent vs brand
+                brand_words = [
+                    'lvmh', 'kering', 'l\'oréal', 'estée lauder', 'chanel', 'dior', 
+                    'gucci', 'prada', 'lv', 'louis vuitton', 'hermès', 'cartier', 
+                    'tiffany', 'bulgari', 'lancome', 'ysl', 'givenchy', 'fendi',
+                    'celine', 'balenciaga', 'bottega veneta', 'valentino',
+                    'armani', 'burberry', 'versace', 'dolce', 'gabbana',
+                    'tom ford', 'marc jacobs', 'coach', 'michael kors',
+                    'ralph lauren', 'tory burch', 'kate spade', 'jimmy choo',
+                    'dior', 'chanel', 'gucci', 'prada', 'nike', 'adidas',
+                    'puma', 'reebok', 'asics', 'new balance', 'converse',
+                    'lululemon', 'alo yoga', 'skims', 'fenty', 'kylie cosmetics',
+                    'charlotte tilbury', 'mac', 'nars', 'pat mcgrath',
+                    'la mer', 'la prairie', 'clinique', 'origins',
+                    'jo malone', 'diptyque', 'byredo', 'le labo',
+                    'omega', 'rolex', 'patek philippe', 'audemars piguet',
+                    'tag heuer', 'breitling', 'iwc', 'jaeger-lecoultre',
+                ]
+
+                g1_lower = g1.lower()
+                g2_lower = g2.lower()
+
+                g1_has_brand = any(b in g1_lower for b in brand_words)
+                g2_has_brand = any(b in g2_lower for b in brand_words)
+
+                # Heuristic: shorter name is usually the person
+                g1_words = len(g1.split())
+                g2_words = len(g2.split())
+
+                if g1_has_brand and not g2_has_brand:
+                    return {"talent": g2, "brand": g1, "link": link, "source": source}
+                elif g2_has_brand and not g1_has_brand:
+                    return {"talent": g1, "brand": g2, "link": link, "source": source}
+                elif g1_words <= 2 and g2_words > 2:
+                    # g1 is likely a person name (1-2 words)
+                    return {"talent": g1, "brand": g2, "link": link, "source": source}
+                elif g2_words <= 2 and g1_words > 2:
+                    return {"talent": g2, "brand": g1, "link": link, "source": source}
+                else:
+                    return {"talent": g1, "brand": g2, "link": link, "source": source}
+
+        return None
+
+    def _extract_partnership(self, title, link, source):
+        """Extract partner names from collaboration headlines."""
+
+        # Look for explicit separators
+        separators = [
+            ' x ', ' X ', ' × ', ' × ', ' × ',
+            ' Collaborates With ', ' Partners With ', ' Teams Up With ',
+            ' Joins Forces With ', ' and ', ' & ',
+        ]
+
+        for sep in separators:
+            if sep in title:
+                parts = title.split(sep, 1)
+                p1 = parts[0].strip()
+                p2 = parts[1].strip()
+
+                # Clean up trailing words
+                p2 = re.sub(r'\s+(?:for|on|to|launch|collection|collaboration|partnership|drop|capsule|limited edition).*$', '', p2, flags=re.IGNORECASE)
+                p1 = re.sub(r'^(?:New|Exclusive|First Look|Inside)\s+', '', p1, flags=re.IGNORECASE)
+
+                if len(p1) > 2 and len(p2) > 2:
+                    return {"partner1": p1, "partner2": p2, "link": link, "source": source}
+
+        # Look for "[Brand] and [Brand]" pattern
+        and_match = re.search(r'^([A-Z][a-zA-Z\s&\'\-]+?)\s+(?:and|&)\s+([A-Z][a-zA-Z\s&\'\-]+?)(?:\s|$)', title)
+        if and_match:
+            return {"partner1": and_match.group(1).strip(), "partner2": and_match.group(2).strip(), "link": link, "source": source}
 
         return None
 
@@ -778,7 +932,7 @@ def save_newsletter(html, filename=None):
 
 def main():
     print("=" * 60)
-    print("VIP & INDUSTRY NEWS - AUTOMATED NEWSLETTER SYSTEM v3.3")
+    print("VIP & INDUSTRY NEWS - AUTOMATED NEWSLETTER SYSTEM v3.4")
     print("=" * 60)
     print(f"📅 Running: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
 
