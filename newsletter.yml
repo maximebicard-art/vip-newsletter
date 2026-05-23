@@ -25,17 +25,20 @@ jobs:
         
     - name: Debug secrets
       run: |
-        if [ -z "${{ secrets.GEMINI_API_KEY }}" ]; then
+        echo "Checking GEMINI_API_KEY..."
+        if [ -z "$GEMINI_API_KEY" ]; then
           echo "❌ GEMINI_API_KEY is EMPTY or not set"
         else
           echo "✅ GEMINI_API_KEY is set (length: ${#GEMINI_API_KEY})"
         fi
+        echo "All env vars containing GEMINI:"
+        env | grep -i gemini || echo "No GEMINI vars found"
         
     - name: Generate newsletter
       env:
         NEWSLETTER_RECIPIENT: ${{ secrets.NEWSLETTER_RECIPIENT }}
         BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
-        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}  # ← NEW
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
         EMAIL_PROVIDER: ${{ secrets.EMAIL_PROVIDER }}
         FROM_NAME: ${{ secrets.FROM_NAME }}
         FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
