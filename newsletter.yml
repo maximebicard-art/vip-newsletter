@@ -22,7 +22,15 @@ jobs:
     - name: Install dependencies
       run: |
         pip install -r requirements.txt
-
+        
+    - name: Debug secrets
+      run: |
+        if [ -z "${{ secrets.GEMINI_API_KEY }}" ]; then
+          echo "❌ GEMINI_API_KEY is EMPTY or not set"
+        else
+          echo "✅ GEMINI_API_KEY is set (length: ${#GEMINI_API_KEY})"
+        fi
+        
     - name: Generate newsletter
       env:
         NEWSLETTER_RECIPIENT: ${{ secrets.NEWSLETTER_RECIPIENT }}
