@@ -22,18 +22,18 @@ jobs:
     - name: Install dependencies
       run: |
         pip install -r requirements.txt
-        
+
     - name: Debug secrets
       run: |
         echo "Checking GEMINI_API_KEY..."
         if [ -z "$GEMINI_API_KEY" ]; then
-          echo "❌ GEMINI_API_KEY is EMPTY or not set"
+          echo "GEMINI_API_KEY is EMPTY or not set"
         else
-          echo "✅ GEMINI_API_KEY is set (length: ${#GEMINI_API_KEY})"
+          echo "GEMINI_API_KEY is set (length: ${#GEMINI_API_KEY})"
         fi
         echo "All env vars containing GEMINI:"
         env | grep -i gemini || echo "No GEMINI vars found"
-        
+
     - name: Generate newsletter
       env:
         NEWSLETTER_RECIPIENT: ${{ secrets.NEWSLETTER_RECIPIENT }}
@@ -52,10 +52,18 @@ jobs:
         CALENDAR_LINK: ${{ secrets.CALENDAR_LINK }}
         SEND_EMAIL: ${{ secrets.SEND_EMAIL }}
       run: |
-        python auto_newsletter_v3.py  # ← UPDATED filename
+        python auto_newsletter_v3.py
 
     - name: Upload generated newsletter
       uses: actions/upload-artifact@v4
       with:
         name: newsletter-${{ github.run_id }}
         path: newsletter_*.html
+
+    - name: Commit and push changes
+      run: |
+        git config --global user.name "github-actions[bot]"
+        git config --global user.email "github-actions[bot]@users.noreply.github.com"
+        git add -A
+        git diff --staged --quiet || git commit -m "Auto-update: newsletter files [skip ci]"
+        git push
