@@ -2,6 +2,7 @@ name: Weekly VIP Newsletter
 
 on:
   schedule:
+    # Run every Friday at 9:00 AM UTC
     - cron: '0 9 * * 5'
   workflow_dispatch:
 
@@ -22,17 +23,6 @@ jobs:
       run: |
         pip install -r requirements.txt
 
-    - name: Debug secrets
-      run: |
-        echo "Checking GEMINI_API_KEY..."
-        if [ -z "$GEMINI_API_KEY" ]; then
-          echo "GEMINI_API_KEY is EMPTY or not set"
-        else
-          echo "GEMINI_API_KEY is set (length: ${#GEMINI_API_KEY})"
-        fi
-        echo "All env vars containing GEMINI:"
-        env | grep -i gemini || echo "No GEMINI vars found"
-
     - name: Generate newsletter
       env:
         NEWSLETTER_RECIPIENT: ${{ secrets.NEWSLETTER_RECIPIENT }}
@@ -51,7 +41,7 @@ jobs:
         CALENDAR_LINK: ${{ secrets.CALENDAR_LINK }}
         SEND_EMAIL: ${{ secrets.SEND_EMAIL }}
       run: |
-        python auto_newsletter_v3.py
+        python auto_newsletter_v3.5.py
 
     - name: Upload generated newsletter
       uses: actions/upload-artifact@v4
