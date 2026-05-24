@@ -41,7 +41,7 @@ jobs:
         CALENDAR_LINK: ${{ secrets.CALENDAR_LINK }}
         SEND_EMAIL: ${{ secrets.SEND_EMAIL }}
       run: |
-        python auto_newsletter_v3.5.py
+        python auto_newsletter_v3.6.py
 
     - name: Upload generated newsletter
       uses: actions/upload-artifact@v4
