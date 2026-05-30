@@ -1,0 +1,54 @@
+name: Weekly VIP Newsletter
+
+on:
+  schedule:
+    # Run every Friday at 9:00 AM UTC
+    - cron: '0 9 * * 5'
+  workflow_dispatch:
+
+jobs:
+  generate-and-send:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout code
+      uses: actions/checkout@v4
+
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.11'
+
+    - name: Install dependencies
+      run: |
+        pip install -r requirements.txt
+
+    - name: Generate newsletter
+      env:
+        NEWSLETTER_RECIPIENT: ${{ secrets.NEWSLETTER_RECIPIENT }}
+        BREVO_API_KEY: ${{ secrets.BREVO_API_KEY }}
+        GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+        TMDB_API_KEY: ${{ secrets.TMDB_API_KEY }}
+        EMAIL_PROVIDER: ${{ secrets.EMAIL_PROVIDER }}
+        FROM_NAME: ${{ secrets.FROM_NAME }}
+        FROM_EMAIL: ${{ secrets.FROM_EMAIL }}
+        SENDER_NAME: ${{ secrets.SENDER_NAME }}
+        SENDER_TITLE: ${{ secrets.SENDER_TITLE }}
+        COMPANY_NAME: ${{ secrets.COMPANY_NAME }}
+        COMPANY_ADDRESS: ${{ secrets.COMPANY_ADDRESS }}
+        SENDER_EMAIL: ${{ secrets.SENDER_EMAIL }}
+        SENDER_PHONE: ${{ secrets.SENDER_PHONE }}
+        COMPANY_URL: ${{ secrets.COMPANY_URL }}
+        CALENDAR_LINK: ${{ secrets.CALENDAR_LINK }}
+        SEND_EMAIL: ${{ secrets.SEND_EMAIL }}
+        PREHEADER: ${{ secrets.PREHEADER }}
+      run: |
+        python auto_newsletter_v3.8.py
+
+    - name: Upload generated newsletter
+      uses: actions/upload-artifact@v4
+      with:
+        name: newsletter-${{ github.run_id }}
+        path: |
+          newsletter_*.html
+          newsletter_*.txt
