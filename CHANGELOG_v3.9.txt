@@ -1,0 +1,225 @@
+================================================================================
+VIP NEWSLETTER v3.9 — CHANGE LOG
+================================================================================
+
+FILES TO REPLACE IN YOUR REPO:
+  1. auto_newsletter_v3.9.py     (replaces v3.8)
+  2. newsletter_template.html    (section reorder — see below)
+  3. .github/workflows/newsletter.yml  (filename update only)
+
+requirements.txt is UNCHANGED (beautifulsoup4 already added in v3.8).
+
+================================================================================
+CHANGE 1 — EVENTS: CRITICAL BUG FIX IN _add()
+================================================================================
+
+BUG (v3.8):
+  EventsFetcher._add() was never checking whether the date was inside the
+  allowed window (cutoff to lookahead). Every date from every source was
+  accepted unconditionally. This caused:
+  - Golden Globe Awards Jan 2027 appearing despite 120-day lookahead
+  - Grammy Awards Feb 2027 appearing for the same reason
+  - Sundance Film Festival May 28 2026 appearing (wrong date from homepage
+    scraping, but passed because there was no check)
+
+FIX:
+  Added `if not (self.cutoff <= dt <= self.lookahead): return` as the first
+  check in _add(). Now nothing outside the window can enter the list.
+
+  Lookahead extended from 120 to 270 days (9 months) to properly capture
+  the full awards cycle — Golden Globes (January) and Grammys (February)
+  from the next calendar year will now appear correctly once they're the
+  next upcoming edition.
+
+================================================================================
+CHANGE 2 — EVENTS: FILM FESTIVALS NOW USE WIKIPEDIA API
+================================================================================
+
+PROBLEM (v3.8):
+  Homepage scraping found wrong dates for Sundance (May 28 instead of Jan),
+  Venice (Jun 09 instead of Aug 27), and Telluride/Tribeca.
+  Root cause: festival homepages contain many dates — press deadlines, sub-
+  program dates, other Biennale events — that the generic regex picked up
+  before the actual festival dates.
+
+FIX:
+  Replaced _fetch_film_festivals() with _fetch_film_festivals_wiki().
+  Wikipedia uses a two-step API call per festival:
+  1. Search Wikipedia for "2026 [Festival] Film Festival"
+  2. Fetch the plain-text intro paragraph via the extracts API
+  Wikipedia intros reliably state: "The [Nth] [Name] Film Festival was held
+  from [date] to [date], [year]." — one clean sentence, no noise.
+
+  The Wikipedia API is free, requires no key, and returns structured JSON.
+
+================================================================================
+CHANGE 3 — EVENTS: FASHION WEEK PROXIMITY EXTRACTION
+================================================================================
+
+PROBLEM (v3.8):
+  BFC (London FW) returned May 30 — a press deadline on the homepage — instead
+  of the September fashion week dates. FHCM (Paris FW) returned no dates.
+  Root cause: generic "first date found on page" matched unrelated content.
+
+FIX:
+  Replaced _fetch_fashion_bodies() with _fetch_fashion_weeks().
+  Dates are now only accepted if they appear within 300 characters of a
+  season-specific proximity keyword:
+  - Paris Men's FW: keywords = ["men", "homme", "menswear", "june", "juin", "ss27"]
+  - Paris Haute Couture: keywords = ["haute couture", "couture", "july", "juillet"]
+  - London FW: keywords = ["london fashion week", "september", "ss27"]
+  - Milan Men's FW: keywords = ["fashion week", "june", "moda", "spring"]
+  - NY FW: keywords = ["new york fashion week", "nyfw", "september"]
+  - Paris Women's FW: keywords = ["women", "femme", "september", "septembre"]
+
+  FHCM is fetched once and reused for all three Paris queries (Men's,
+  Haute Couture, Women's) via a URL cache.
+
+FashionUnited scraper: REMOVED. It caused the LFW May 30 false positive
+in v3.8.
+
+================================================================================
+CHANGE 4 — EVENTS: SEMI-STATIC ANNUAL EVENTS
+================================================================================
+
+For events with no reliable API (not on TVmaze, no clean Wikipedia page):
+  CFDA Fashion Awards, Pitti Uomo, LACMA Art+Film Gala, British Fashion Awards.
+
+A small SEMI_STATIC_EVENTS dict at the top of the file holds YYYY-MM-DD dates
+that need updating once per year when officially announced. Past dates are
+filtered automatically by _add(). This is the minimum viable maintenance
+burden — only 4 dates per year.
+
+  SEMI_STATIC_EVENTS = {
+      "CFDA Fashion Awards":    "2026-06-09",
+      "Pitti Uomo":             "2026-06-10",
+      "LACMA Art+Film Gala":    "2026-11-07",
+      "British Fashion Awards": "2026-12-07",
+  }
+
+================================================================================
+CHANGE 5 — AMBASSADORS: HYPEBEAST/HYPEBAE EXTRACTION FIX
+================================================================================
+
+PROBLEM (v3.8):
+  Items from Hypebeast/Hypebae appeared with blank brands ("for ") because
+  _extract_ambassador() didn't handle their headline formats:
+  - "NINGNING Stars in Gucci's New 'Beauty and the Bag' Campaign"
+  - "Jisoo for Salomon's Newest Global Ambassador Role"
+  - "X Joins Y as New Global Ambassador"
+
+  Also, Salomon, New Balance, and other sports-luxury brands were not in
+  the brand recognition list, causing reversed talent/brand assignment.
+
+FIX:
+  Added three new regex patterns:
+  1. "X Stars in / Featured in / Fronts Y's [adjective]"
+  2. "X is Y's newest/latest ambassador/face"
+  3. "X Joins/Becomes Y as New Global [role]"
+
+  Expanded brand_words with: Salomon, New Balance, On Running, Hoka, Under
+  Armour, Stone Island, Arc'teryx, Swarovski, Rimowa, Tumi, Montblanc,
+  Moncler, Brunello Cucinelli.
+
+  Added brand name cleanup: strips "'s New", "'s Latest", "'s Global",
+  "'s Newest", "'s Campaign", etc. from extracted brand names so "Gucci's New"
+  becomes "Gucci".
+
+================================================================================
+CHANGE 6 — INDUSTRY NEWS: FRENCH SIGNALS + LUXURY BRAND GATE
+================================================================================
+
+French language weak signals added:
+  "crayons à lèvres", "maquillage", "make-up pour", "trésors make-up",
+  "avant-première pour vogue", "prochains trésors", "à lèvres",
+  "prochaines créations", "nouvelle création"
+  These catch articles like the Pat McGrath/LV lip crayons piece (Vogue France).
+
+Luxury brand gate for mid-market sources (Drapers, WWD):
+  Articles from Drapers or WWD that mention NO luxury brand (LVMH, Kering,
+  Hermès, Chanel, Dior, Gucci, etc.) AND are not M&A/regulatory are now
+  rejected before the relevance scoring stage.
+  This eliminates: Gap, American Eagle, Old Navy, Walmart, and similar mass-
+  market earnings/strategy articles that have zero relevance for a VIP
+  luxury/entertainment consultancy newsletter.
+
+Additional weak signals added:
+  "star-studded album", "inspired album" (music mis-filed as industry news)
+  "french open fashion", "roland-garros" (sports fashion coverage)
+  "where to watch", "now streaming" (guide articles)
+
+================================================================================
+CHANGE 7 — CASTINGS: NEW EXCLUDE SIGNALS
+================================================================================
+
+Distribution deals now excluded from castings:
+  "buys rights", "acquires rights", "picks up rights", "distribution rights",
+  "north american rights", "scoops up", "paramount buys", "buys starring"
+  These catch: "Paramount Buys 'The Midnight Library' Starring Florence Pugh"
+
+Festival industry programs excluded:
+  "joins panel", "joins jury", "joins program", "joins industry",
+  "docfest", "film festival program", "industry program"
+  These catch: "Asif Kapadia Joins Sheffield DocFest Industry Program"
+
+Where-to-watch guides excluded:
+  "where to watch", "how to watch", "when to watch",
+  "streaming on", "now streaming", "available on"
+  These catch: "Where to Watch 'Criminal Minds: Evolution' Season 19"
+
+================================================================================
+SECTION REORDER — newsletter_template.html
+================================================================================
+
+The current section order in the template is:
+  Key Events → Industry News → Ambassadors → Partnerships → Castings
+
+For a VIP luxury/entertainment consultancy, ambassador and partnership
+intelligence is the primary product — not broad industry news. Recommended:
+
+  Key Events → Ambassadors → Partnerships → Industry News → Film/TV Projects → Castings
+
+HOW TO FIX IN newsletter_template.html:
+  Find the six `<!-- SECTION: ... -->` blocks and reorder them.
+  The section blocks are identifiable by their <h2> section titles:
+  1. "Key Award Shows & Events Ahead"     → stays first
+  2. "Ambassador Announcements & Campaign Stars"  → move to position 2
+  3. "Brand Partnerships"                 → move to position 3
+  4. "Industry News"                      → move to position 4
+  5. "Film Projects" / "TV Projects"      → position 5-6
+  6. "Ones to Watch / Key Castings"       → move to last
+
+  No Python changes needed — this is a template-only change.
+
+================================================================================
+DEPLOYMENT CHECKLIST
+================================================================================
+
+[ ] 1. Rename file to auto_newsletter_v3.9.py in your repo root
+[ ] 2. Update .github/workflows/newsletter.yml (filename → v3.9)
+[ ] 3. Update SEMI_STATIC_EVENTS dates if any are wrong for this year
+[ ] 4. Reorder sections in newsletter_template.html (see above)
+[ ] 5. Commit all changes to main branch
+[ ] 6. Run workflow manually and verify logs:
+       ✅ "TVmaze award shows: N"
+       ✅ "Fashion weeks: N"
+       ✅ "Film festivals (Wikipedia): N"
+       ✅ "Semi-static annual events: N"
+       ✅ No Sundance/Venice/LFW with wrong dates
+       ✅ No Gap/American Eagle in Industry News
+       ✅ Ambassadors showing correct talent → brand format
+
+================================================================================
+ANNUAL MAINTENANCE
+================================================================================
+
+Once per year, update SEMI_STATIC_EVENTS when dates are confirmed:
+  - CFDA Fashion Awards: usually June
+  - Pitti Uomo: usually June 10-13
+  - LACMA Art+Film Gala: usually first weekend of November
+  - British Fashion Awards: usually first week of December
+
+All other events (award shows, film festivals, fashion weeks) are fully
+automated and require no maintenance.
+
+================================================================================
