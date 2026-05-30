@@ -1,0 +1,179 @@
+================================================================================
+VIP NEWSLETTER v3.8 — CHANGE LOG
+================================================================================
+
+FILES TO REPLACE IN YOUR REPO:
+  1. auto_newsletter_v3.8.py      (replaces v3.7)
+  2. requirements.txt             (adds beautifulsoup4)
+  3. .github/workflows/newsletter.yml
+
+NO TEMPLATE CHANGES NEEDED for this release.
+
+================================================================================
+CHANGE 1 — EVENTS: FULLY AUTOMATED (no more hardcoded dates)
+================================================================================
+
+PROBLEM IN v3.7:
+  The hardcoded events list had three confirmed date errors:
+  - Paris Men's FW listed Jun 15 → actual confirmed dates: Jun 23–28
+  - Milan Men's FW listed Jun 21 → actual confirmed dates: Jun 19–23
+  - London Men's FW Jun 24 listed → BFC cancelled the June edition entirely
+  Any hardcoded list will drift and require quarterly manual maintenance.
+
+FIX — EventsFetcher class:
+  All dates now come from live authoritative sources on every run.
+  No dates are stored in the code.
+
+  Source hierarchy (all fail-silent, failures logged but never crash):
+
+  TVmaze API (free, no key)
+    Queries the next broadcast date for each major award show by name.
+    Covers: Tony Awards, Emmy Awards, Grammy Awards, Golden Globes, BAFTA,
+    MTV VMAs, American Music Awards, CFDA Fashion Awards, Met Gala,
+    LACMA Art+Film Gala, British Fashion Awards.
+    Uses: api.tvmaze.com/singlesearch/shows + /shows/{id}?embed=nextepisode
+
+  Official fashion body websites (scraped, no key)
+    Camera Nazionale della Moda Italiana → Milan FW dates
+    FHCM (Paris) → Paris Men's FW + Haute Couture + Women's FW dates
+    BFC → London FW dates (June edition absence detected automatically)
+    CFDA → New York Fashion Week dates
+    Pitti Immagine → Pitti Uomo Florence dates
+    Pages parsed with BeautifulSoup; date extraction uses multi-pattern regex.
+
+  FashionUnited events calendar (scraped, no key)
+    Searches the events page for each fashion week keyword and extracts
+    any date in the 300-character window around the keyword.
+    Covers: Milan, Paris, London, New York FW + Haute Couture + Pitti.
+
+  Film festival official sites (scraped, no key)
+    Cannes, Venice, TIFF, Tribeca, Sundance, Telluride — each homepage
+    is fetched and parsed for event date patterns.
+
+  TMDB upcoming film premieres (requires TMDB_API_KEY)
+    Only films with popularity ≥ 100 are added to the events calendar
+    (lower-popularity films still appear in the In Theaters section).
+
+  Gemini ranking
+    Once all sources are merged and sorted chronologically, Gemini picks
+    the top 15 most VIP-relevant items. Falls back to chronological order
+    if GEMINI_API_KEY is not set.
+
+DEPENDENCY ADDED:
+  beautifulsoup4>=4.12.0 — used for HTML parsing in EventsFetcher.
+  If not installed, the scraper falls back to raw regex on HTML text.
+
+================================================================================
+CHANGE 2 — AMBASSADORS: SAME-DAY COVERAGE FIXED
+================================================================================
+
+PROBLEM IN v3.7:
+  Jisoo/Salomon (announced May 28, same day as newsletter) was completely
+  missed. Alysa Liu/Louis Vuitton (announced May 4) was also missed.
+  Root cause: BoF's RSS returns paywalled previews without the keywords
+  "ambassador" or "global ambassador" in the snippet.
+
+FIX:
+  Added to ambassador RSS_SOURCES:
+    {"url": "https://hypebeast.com/feed", "source": "Hypebeast"}
+    {"url": "https://hypebae.com/feed",   "source": "Hypebae"}
+
+  Both publish ambassador news same-day and free, with full headlines
+  that always contain the classifier trigger keywords.
+
+================================================================================
+CHANGE 3 — INDUSTRY NEWS: TIGHTER FILTERING
+================================================================================
+
+PROBLEM IN v3.7:
+  The following items appeared in Industry News but should not have:
+  - Collection/runway coverage: Fendi croisière, Lafayette 148 Resort
+  - Red carpet / front row attendance: Jennie BLACKPINK, Marion Cotillard
+  - Retail logistics: Walmart supply chain article (zero relevance)
+  - Recurring data columns: Vogue Business Beauty Trend Tracker
+
+FIX — new entries in weak_signals:
+  Collection/runway:   "croisière", "cruise collection", "resort 20",
+                       "collection croisière", "collection review",
+                       "runway review", "season review"
+  Red carpet/attendance: "front row", "première rang", "au premier rang",
+                          "attends the", "attend the", "steps out in"
+  Logistics:           "supply chain", "consolidation network",
+                       "distribution center", "first-mile", "prepaid",
+                       "supplier access", "logistics"
+  Data columns:        "trend tracker", "data tracker", "beauty tracker",
+                       "spate tracking"
+
+  Items with weakness_score ≥ 2 are still rejected (threshold unchanged).
+
+================================================================================
+CHANGE 4 — PARTNERSHIPS: "x See article" BUG FIXED
+================================================================================
+
+PROBLEM IN v3.6.1 / v3.7:
+  When _extract_partnership() failed to parse two partners from an article
+  title, the item was published as:
+    Partner 1: [full article headline]
+    Partner 2: See article
+  This produced entries like:
+    "'Punky Duck' Creator x See article"
+    "Fred Hechinger Lands Key Role x See article"
+
+FIX:
+  If _extract_partnership() returns None, _format_item() now returns None.
+  The item is silently discarded. No "See article" fallback exists anymore.
+
+================================================================================
+CHANGE 5 — CASTINGS: INTERVIEW/PROFILE BLEED FIXED
+================================================================================
+
+PROBLEM IN v3.7:
+  Three non-casting items appeared in the Castings section:
+  - "Talking Sex and Shakespeare With 'Rivals' Star David Tennant" (interview)
+  - "Michelle Pfeiffer on Taking TV by Storm..." (profile)
+  - "How the Rafael Nadal Docuseries 'Rafa' Took Unexpected Turns..." (feature)
+
+FIX — new entries in castings CLASSIFIERS['exclude']:
+  "talking with", "on taking", "on working with", "in conversation",
+  "opens up about", "speaks with", "reflects on his", "reflects on her",
+  "on his career", "on her career", "discusses his", "discusses her",
+  "the story of", "how the", "unexpected turns"
+
+================================================================================
+DEPLOYMENT CHECKLIST
+================================================================================
+
+[ ] 1. Rename file to auto_newsletter_v3.8.py in your repo root
+[ ] 2. Replace requirements.txt (adds beautifulsoup4)
+[ ] 3. Update .github/workflows/newsletter.yml (filename → v3.8)
+[ ] 4. Commit all three files to main branch
+[ ] 5. Run workflow manually and check logs for:
+       🏆 TVmaze award shows: N
+       👗 Official fashion bodies: N
+       👗 FashionUnited: N
+       🎥 Film festivals: N
+       🎬 TMDB film premieres: N
+       📅 Events total after dedup: N
+[ ] 6. Verify events section shows correct dates (Milan Jun 19, Paris Jun 23)
+[ ] 7. Verify no "x See article" items in Partnerships
+[ ] 8. Verify no interview articles in Castings
+
+================================================================================
+NOTES ON SCRAPING RELIABILITY
+================================================================================
+
+The official fashion body sites (FHCM, Camera Nazionale, BFC, CFDA) are very
+stable — their homepage HTML structure rarely changes between seasons. If a
+site does change layout, the EventsFetcher logs a warning and simply returns
+nothing for that source; the other sources still contribute.
+
+FashionUnited is slightly more dynamic. If the events page URL changes,
+update EventsFetcher._FU_URL in the script.
+
+TVmaze is the most reliable source and never fails silently — it returns
+structured JSON with explicit error codes.
+
+If fewer events than expected appear: check the GitHub Actions log for
+"⚠️ GET" warnings indicating which sources could not be reached.
+
+================================================================================
