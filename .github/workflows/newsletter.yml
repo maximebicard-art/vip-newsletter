@@ -43,7 +43,7 @@ jobs:
         SEND_EMAIL: ${{ secrets.SEND_EMAIL }}
         PREHEADER: ${{ secrets.PREHEADER }}
       run: |
-        python auto_newsletter_v3.20.py
+        python auto_newsletter_v3.21.py
 
     - name: Upload generated newsletter
       uses: actions/upload-artifact@v4
