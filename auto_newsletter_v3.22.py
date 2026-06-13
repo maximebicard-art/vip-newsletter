@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VIP & Industry News - AUTOMATED NEWSLETTER SYSTEM v3.22
+VIP & Industry News - AUTOMATED NEWSLETTER SYSTEM v3.22.1
 ========================================================
 CHANGES FROM v3.21 — diagnosed from first live v3.21 run (June 13 PM)
 
@@ -1756,8 +1756,15 @@ class NewsletterScraper:
             # route directly to ambassadors (authoritative — the ambassador
             # classifier's rigid keyword scoring would otherwise reject the
             # campaign phrasing). Source must be allowed to contribute ambassadors.
+            # v3.22.1: Person-vs-brand campaign reroute. Fire whenever the item
+            # looks like a brand+person campaign AND it's a fashion/beauty item
+            # (hint is ambassadors or partnerships, or unset). Previously this
+            # only checked hint=="partnerships", but Hypebae items are hinted
+            # "ambassadors" first (that feed is listed before partnerships), so
+            # the True Religion x Zara Larsson item slipped through to partnerships
+            # via the classifier fallback. Now hint-independent for fashion items.
             _campaign_reroute = False
-            if hint == "partnerships" and looks_like_ambassador_campaign(text):
+            if hint in ("partnerships", "ambassadors", "") and looks_like_ambassador_campaign(text):
                 _amb_allowed = SOURCE_CATEGORY_RESTRICTIONS.get(source, None)
                 if _amb_allowed is None or "ambassadors" in _amb_allowed:
                     _campaign_reroute = True
@@ -2570,7 +2577,7 @@ def save_newsletter(html, filename=None):
 
 def main():
     print("=" * 60)
-    print("VIP & INDUSTRY NEWS - AUTOMATED NEWSLETTER SYSTEM v3.22")
+    print("VIP & INDUSTRY NEWS - AUTOMATED NEWSLETTER SYSTEM v3.22.1")
     print("=" * 60)
     print(f"📅 Running: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
 
