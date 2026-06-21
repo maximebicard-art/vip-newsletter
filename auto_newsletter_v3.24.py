@@ -1,6 +1,6 @@
 #!/usr/bin/env python3
 """
-VIP & Industry News - AUTOMATED NEWSLETTER SYSTEM v3.24
+VIP & Industry News - AUTOMATED NEWSLETTER SYSTEM v3.24.1
 ========================================================
 CHANGES FROM v3.23 — Ambassador section cleanup
 
@@ -328,7 +328,7 @@ def looks_like_ambassador_campaign(text_lower):
     never reroute (Nothing phone, playlists, watch launches, Hypebeast Cup)."""
 
     # Hard block — these are never ambassador campaigns even if they contain a
-    # collaboration verb. Catches the junk that polluted the section.
+    # collaboration verb or "unveils". Catches the junk that polluted the section.
     AMBASSADOR_HARD_BLOCK = [
         "everything we loved", "everything we added", "playlist this week",
         "music this week", "new single", "drops new", "shares new single",
@@ -338,30 +338,48 @@ def looks_like_ambassador_campaign(text_lower):
         "sneaker archive", "boot test", "gaming", "video game",
         "radio player", "streams curated", "mixtape", "print t-shirts",
         "t-shirts spotlight", "best world cup capsule",
+        # v3.24.1: product/tech launches that used "unveils"
+        "scent scanner", "ai-powered", "ai powered", "scanner on",
+        "gadget", "wearable", "headphones", "earbuds",
+        "smartphone", "phone as", "raises $", "million from",
+        "for our next vintage",  # broken Vestiaire fragment
     ]
     if any(b in text_lower for b in AMBASSADOR_HARD_BLOCK):
         return False
 
-    # (b) Strong person-anchored endorsement phrases — qualify on their own
+    # (b) Strong person-anchored endorsement phrases — qualify on their own.
+    # v3.24.1: removed bare "unveils" and "signature sneaker"/"signature
+    # collection" — they fired on every product launch (Jo Malone Scent Scanner).
+    # "unveils" now only counts via the verb+person path below.
     STRONG_CAMPAIGN_PHRASES = [
         "stars in", "fronts", "is the new face", "new face of", "the face of",
         "named the face", "named ambassador", "global ambassador",
         "brand ambassador", "house ambassador", "becomes the face",
-        "unveils", "signature sneaker", "signature collection",
         "first creative partner", "creative partner in residence",
         "joins as", "campaign starring",
         "fronts the campaign", "is the face", "tapped as",
-        # v3.24: standalone endorsement nouns — safe because the hard-block
-        # above already removed tech/music/product/event junk
+        # standalone endorsement nouns — safe because the hard-block above
+        # already removed tech/music/product/event junk
         "ambassador", "viva glam", "brand muse", "new muse", "spokesperson",
     ]
     has_strong = any(p in text_lower for p in STRONG_CAMPAIGN_PHRASES)
+
+    # v3.24.1: signature-product endorsements — "unveils X's signature sneaker",
+    # "X's First-Ever Signature" — these are athlete/celebrity endorsements.
+    # Requires the possessive "'s ... signature" shape so it doesn't fire on
+    # generic product launches.
+    import re as _re
+    has_signature = bool(_re.search(r"'s\b[^.]{0,40}\bsignature\b", text_lower)) or \
+                    ("signature" in text_lower and "first-ever" in text_lower) or \
+                    ("signature" in text_lower and "first ever" in text_lower)
 
     # (a) verb + explicit person-marker
     has_verb = any(v in text_lower for v in AMBASSADOR_VERB_PHRASES)
     has_person = any(p in text_lower for p in PERSON_MARKERS)
 
     if has_strong:
+        return True
+    if has_signature:
         return True
     if has_verb and has_person:
         return True
@@ -2662,7 +2680,7 @@ def save_newsletter(html, filename=None):
 
 def main():
     print("=" * 60)
-    print("VIP & INDUSTRY NEWS - AUTOMATED NEWSLETTER SYSTEM v3.24")
+    print("VIP & INDUSTRY NEWS - AUTOMATED NEWSLETTER SYSTEM v3.24.1")
     print("=" * 60)
     print(f"📅 Running: {datetime.now().strftime('%Y-%m-%d %H:%M')}")
 
