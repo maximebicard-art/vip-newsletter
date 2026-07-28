@@ -1,10 +1,19 @@
-name: Weekly VIP Newsletter
+name: Weekly VIP Newsletter (v3.32)
+
+# v3.32: The persistent item cache (item_cache.json) only helps if the job runs
+# DAILY — otherwise nothing accumulates between the weekly sends and mid-week
+# stories still roll out of the feeds before Friday. So we now:
+#   • run every day at 09:00 UTC to FETCH + CACHE,
+#   • restore/save the cache across runs via actions/cache (no repo commits),
+#   • only SEND the email on Fridays (or on a manual run).
 
 on:
   schedule:
-    # Run every Friday at 9:00 AM UTC
-    - cron: '0 9 * * 5'
+    - cron: '0 9 * * *'      # daily 09:00 UTC — fetch + cache every day
   workflow_dispatch:
+
+permissions:
+  contents: read              # actions/cache needs no write permission
 
 jobs:
   generate-and-send:
@@ -23,6 +32,29 @@ jobs:
       run: |
         pip install -r requirements.txt
 
+    # Restore the most recent item cache from a previous run. The exact key
+    # (per run_id) never hits; the restore-keys prefix pulls the newest cache.
+    - name: Restore item cache
+      uses: actions/cache/restore@v4
+      with:
+        path: item_cache.json
+        key: item-cache-${{ github.run_id }}
+        restore-keys: |
+          item-cache-
+
+    # Send on Fridays (DOW=5) or whenever the workflow is run manually.
+    - name: Decide whether to send
+      id: send
+      run: |
+        DOW=$(date -u +%u)
+        if [ "$DOW" = "5" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "flag=1" >> "$GITHUB_OUTPUT"
+          echo "Send day: yes"
+        else
+          echo "flag=0" >> "$GITHUB_OUTPUT"
+          echo "Send day: no (fetch + cache only)"
+        fi
+
     - name: Generate newsletter
       env:
         NEWSLETTER_RECIPIENT: ${{ secrets.NEWSLETTER_RECIPIENT }}
@@ -40,15 +72,30 @@ jobs:
         SENDER_PHONE: ${{ secrets.SENDER_PHONE }}
         COMPANY_URL: ${{ secrets.COMPANY_URL }}
         CALENDAR_LINK: ${{ secrets.CALENDAR_LINK }}
-        SEND_EMAIL: ${{ secrets.SEND_EMAIL }}
         PREHEADER: ${{ secrets.PREHEADER }}
+        # v3.32: send flag is computed (Friday or manual), not taken from secrets.
+        SEND_EMAIL: ${{ steps.send.outputs.flag }}
+        # v3.32: item cache (defaults are fine; shown here so they're tunable).
+        ITEM_CACHE_PATH: item_cache.json
+        CACHE_RETENTION_DAYS: '10'
+        DEBUG_NEWSLETTER: '1'
       run: |
-        python auto_newsletter_v3.31.py
+        python auto_newsletter_v3.32.py
+
+    # Persist the updated cache for the next run (even if a later step fails).
+    - name: Save item cache
+      if: always()
+      uses: actions/cache/save@v4
+      with:
+        path: item_cache.json
+        key: item-cache-${{ github.run_id }}
 
     - name: Upload generated newsletter
+      if: always()
       uses: actions/upload-artifact@v4
       with:
         name: newsletter-${{ github.run_id }}
         path: |
           newsletter_*.html
           newsletter_*.txt
+          item_cache.json
