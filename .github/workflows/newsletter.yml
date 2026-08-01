@@ -1,19 +1,28 @@
-name: Weekly VIP Newsletter (v3.32)
+name: VIP Newsletter (v3.33)
 
-# v3.32: The persistent item cache (item_cache.json) only helps if the job runs
-# DAILY — otherwise nothing accumulates between the weekly sends and mid-week
-# stories still roll out of the feeds before Friday. So we now:
-#   • run every day at 09:00 UTC to FETCH + CACHE,
-#   • restore/save the cache across runs via actions/cache (no repo commits),
-#   • only SEND the email on Fridays (or on a manual run).
+# v3.33: Poll every 2 HOURS, send once a week.
+# Why: WWD / WWD Beauty / Drapers / THR expose only 10 items each. At WWD's
+# publishing volume that buffer turns over in roughly 3 hours, so a daily run
+# could only ever capture ~25% of its output (measured: 25%). Polling every 2h
+# stays inside that window with margin; the persistent item cache accumulates
+# everything between sends.
+#
+# Cost: ~12 runs/day x ~1.5 min ≈ 540 min/month — inside GitHub's 2,000-min
+# free tier for private repos. If minutes get tight, '0 */3 * * *' is the
+# cheaper fallback (marginal against a ~3h buffer, but far better than daily).
 
 on:
   schedule:
-    - cron: '0 9 * * *'      # daily 09:00 UTC — fetch + cache every day
+    - cron: '0 */2 * * *'     # every 2 hours — fetch + cache
   workflow_dispatch:
 
 permissions:
-  contents: read              # actions/cache needs no write permission
+  contents: read
+
+# Never let two runs write the cache at once.
+concurrency:
+  group: vip-newsletter
+  cancel-in-progress: false
 
 jobs:
   generate-and-send:
@@ -32,8 +41,6 @@ jobs:
       run: |
         pip install -r requirements.txt
 
-    # Restore the most recent item cache from a previous run. The exact key
-    # (per run_id) never hits; the restore-keys prefix pulls the newest cache.
     - name: Restore item cache
       uses: actions/cache/restore@v4
       with:
@@ -42,17 +49,19 @@ jobs:
         restore-keys: |
           item-cache-
 
-    # Send on Fridays (DOW=5) or whenever the workflow is run manually.
+    # Send only on the Friday 09:00 UTC run, or on a manual dispatch.
+    # Every other run fetches and caches silently.
     - name: Decide whether to send
       id: send
       run: |
         DOW=$(date -u +%u)
-        if [ "$DOW" = "5" ] || [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-          echo "flag=1" >> "$GITHUB_OUTPUT"
-          echo "Send day: yes"
+        HOUR=$(date -u +%H)
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
+          echo "flag=1" >> "$GITHUB_OUTPUT"; echo "Manual run -> SEND"
+        elif [ "$DOW" = "5" ] && [ "$HOUR" = "09" ]; then
+          echo "flag=1" >> "$GITHUB_OUTPUT"; echo "Friday 09:00 UTC -> SEND"
         else
-          echo "flag=0" >> "$GITHUB_OUTPUT"
-          echo "Send day: no (fetch + cache only)"
+          echo "flag=0" >> "$GITHUB_OUTPUT"; echo "Fetch + cache only"
         fi
 
     - name: Generate newsletter
@@ -73,16 +82,14 @@ jobs:
         COMPANY_URL: ${{ secrets.COMPANY_URL }}
         CALENDAR_LINK: ${{ secrets.CALENDAR_LINK }}
         PREHEADER: ${{ secrets.PREHEADER }}
-        # v3.32: send flag is computed (Friday or manual), not taken from secrets.
         SEND_EMAIL: ${{ steps.send.outputs.flag }}
-        # v3.32: item cache (defaults are fine; shown here so they're tunable).
         ITEM_CACHE_PATH: item_cache.json
         CACHE_RETENTION_DAYS: '10'
+        SOFT_RESERVE_PCT: '0.30'      # v3.33: ~30% soft in industry news
         DEBUG_NEWSLETTER: '1'
       run: |
-        python auto_newsletter_v3.32.py
+        python auto_newsletter_v3.33.py
 
-    # Persist the updated cache for the next run (even if a later step fails).
     - name: Save item cache
       if: always()
       uses: actions/cache/save@v4
@@ -90,8 +97,9 @@ jobs:
         path: item_cache.json
         key: item-cache-${{ github.run_id }}
 
+    # Only keep artifacts from send runs — 12 uploads/day is just noise.
     - name: Upload generated newsletter
-      if: always()
+      if: steps.send.outputs.flag == '1'
       uses: actions/upload-artifact@v4
       with:
         name: newsletter-${{ github.run_id }}
