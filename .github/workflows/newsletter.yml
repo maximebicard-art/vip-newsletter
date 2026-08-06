@@ -1,25 +1,38 @@
 name: VIP Newsletter (v3.33)
 
-# v3.33: Poll every 2 HOURS, send once a week.
-# Why: WWD / WWD Beauty / Drapers / THR expose only 10 items each. At WWD's
-# publishing volume that buffer turns over in roughly 3 hours, so a daily run
-# could only ever capture ~25% of its output (measured: 25%). Polling every 2h
-# stays inside that window with margin; the persistent item cache accumulates
-# everything between sends.
+# v3.33 (hardened): Poll every 2 HOURS, send once a week.
 #
-# Cost: ~12 runs/day x ~1.5 min ≈ 540 min/month — inside GitHub's 2,000-min
-# free tier for private repos. If minutes get tight, '0 */3 * * *' is the
-# cheaper fallback (marginal against a ~3h buffer, but far better than daily).
+# Why 2-hourly: WWD / WWD Beauty / Drapers / THR expose only 10 items each. At
+# WWD's volume that buffer turns over in ~3h, so a daily run could only capture
+# ~25% of its output (measured). Polling every 2h stays inside that window; the
+# persistent item cache accumulates everything between sends.
+#
+# HARDENING (after GitHub runner-acquisition failures):
+#  • Cron runs at :23, NOT :00. The top of the hour is the most congested slot
+#    on GitHub's scheduler and the most likely to be delayed or dropped.
+#  • The send no longer requires an EXACT hour match. Scheduled runs are
+#    best-effort and can be delayed or fail outright ("The job was not acquired
+#    by Runner of type hosted..."). Previously a delayed Friday 09:00 run meant
+#    NO newsletter that week, silently. Now we send on the FIRST Friday run at
+#    or after 09:00 UTC, guarded by a last-sent-week marker so it still fires
+#    exactly once per week. A failed run just sends 2 hours later instead.
+#
+# Cost: ~12 runs/day x ~1.5 min ~= 540 min/month — inside GitHub's 2,000-min
+# free tier for private repos. If minutes get tight, '23 */3 * * *' is cheaper.
 
 on:
   schedule:
-    - cron: '0 */2 * * *'     # every 2 hours — fetch + cache
+    - cron: '23 */2 * * *'    # every 2 hours, offset off the congested :00 slot
   workflow_dispatch:
+    inputs:
+      force_send:
+        description: 'Send the newsletter even if already sent this week'
+        type: boolean
+        default: true
 
 permissions:
   contents: read
 
-# Never let two runs write the cache at once.
 concurrency:
   group: vip-newsletter
   cancel-in-progress: false
@@ -41,27 +54,42 @@ jobs:
       run: |
         pip install -r requirements.txt
 
-    - name: Restore item cache
+    # Restores item_cache.json AND last_send.txt (the once-per-week marker).
+    - name: Restore state
       uses: actions/cache/restore@v4
       with:
-        path: item_cache.json
-        key: item-cache-${{ github.run_id }}
+        path: |
+          item_cache.json
+          last_send.txt
+        key: vip-state-${{ github.run_id }}
         restore-keys: |
-          item-cache-
+          vip-state-
 
-    # Send only on the Friday 09:00 UTC run, or on a manual dispatch.
-    # Every other run fetches and caches silently.
     - name: Decide whether to send
       id: send
       run: |
-        DOW=$(date -u +%u)
+        DOW=$(date -u +%u)          # 5 = Friday
         HOUR=$(date -u +%H)
-        if [ "${{ github.event_name }}" = "workflow_dispatch" ]; then
-          echo "flag=1" >> "$GITHUB_OUTPUT"; echo "Manual run -> SEND"
-        elif [ "$DOW" = "5" ] && [ "$HOUR" = "09" ]; then
-          echo "flag=1" >> "$GITHUB_OUTPUT"; echo "Friday 09:00 UTC -> SEND"
+        WEEK=$(date -u +%G-W%V)     # ISO year-week, e.g. 2026-W32
+        LAST=$(cat last_send.txt 2>/dev/null || echo "none")
+        echo "week=$WEEK" >> "$GITHUB_OUTPUT"
+        echo "UTC now: DOW=$DOW HOUR=$HOUR WEEK=$WEEK | last sent: $LAST"
+
+        if [ "${{ github.event_name }}" = "workflow_dispatch" ] \
+           && [ "${{ inputs.force_send }}" = "true" ]; then
+          echo "flag=1" >> "$GITHUB_OUTPUT"; echo "-> SEND (manual)"
+        elif [ "$WEEK" = "$LAST" ]; then
+          echo "flag=0" >> "$GITHUB_OUTPUT"; echo "-> fetch only (already sent $WEEK)"
+        elif [ "$DOW" -eq 5 ] && [ "$HOUR" -ge 09 ]; then
+          # First Friday run at/after 09:00 UTC that hasn't sent this week.
+          # Tolerates delayed or failed earlier runs instead of skipping a week.
+          echo "flag=1" >> "$GITHUB_OUTPUT"; echo "-> SEND (first eligible Friday run)"
+        elif [ "$DOW" -gt 5 ]; then
+          # Safety net: Friday was missed entirely (outage all day). Send on the
+          # weekend rather than lose the issue.
+          echo "flag=1" >> "$GITHUB_OUTPUT"; echo "-> SEND (catch-up, Friday missed)"
         else
-          echo "flag=0" >> "$GITHUB_OUTPUT"; echo "Fetch + cache only"
+          echo "flag=0" >> "$GITHUB_OUTPUT"; echo "-> fetch + cache only"
         fi
 
     - name: Generate newsletter
@@ -85,19 +113,26 @@ jobs:
         SEND_EMAIL: ${{ steps.send.outputs.flag }}
         ITEM_CACHE_PATH: item_cache.json
         CACHE_RETENTION_DAYS: '10'
-        SOFT_RESERVE_PCT: '0.30'      # v3.33: ~30% soft in industry news
+        SOFT_RESERVE_PCT: '0.30'
         DEBUG_NEWSLETTER: '1'
       run: |
         python auto_newsletter_v3.33.py
 
-    - name: Save item cache
+    # Marker is written ONLY after the send step succeeds, so a failed send
+    # retries on the next run instead of being recorded as delivered.
+    - name: Record successful send
+      if: success() && steps.send.outputs.flag == '1'
+      run: echo "${{ steps.send.outputs.week }}" > last_send.txt
+
+    - name: Save state
       if: always()
       uses: actions/cache/save@v4
       with:
-        path: item_cache.json
-        key: item-cache-${{ github.run_id }}
+        path: |
+          item_cache.json
+          last_send.txt
+        key: vip-state-${{ github.run_id }}
 
-    # Only keep artifacts from send runs — 12 uploads/day is just noise.
     - name: Upload generated newsletter
       if: steps.send.outputs.flag == '1'
       uses: actions/upload-artifact@v4
