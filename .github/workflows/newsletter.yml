@@ -1,6 +1,6 @@
-name: VIP Newsletter (v3.33)
+name: VIP Newsletter (v3.34)
 
-# v3.33 (hardened): Poll every 2 HOURS, send once a week.
+# v3.34 (hardened): Poll every 2 HOURS, send once a week.
 #
 # Why 2-hourly: WWD / WWD Beauty / Drapers / THR expose only 10 items each. At
 # WWD's volume that buffer turns over in ~3h, so a daily run could only capture
