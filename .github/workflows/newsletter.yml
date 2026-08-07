@@ -116,7 +116,7 @@ jobs:
         SOFT_RESERVE_PCT: '0.30'
         DEBUG_NEWSLETTER: '1'
       run: |
-        python auto_newsletter_v3.33.py
+        python auto_newsletter_v3.34.py
 
     # Marker is written ONLY after the send step succeeds, so a failed send
     # retries on the next run instead of being recorded as delivered.
