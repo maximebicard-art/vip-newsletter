@@ -1,0 +1,86 @@
+================================================================================
+VIP & INDUSTRY NEWS — CHANGELOG v4.0
+================================================================================
+Date: 2026-08-29
+Author: Maxime Bicard
+================================================================================
+
+v4.0 — MAJOR REFACTOR: Monolith → Modular Package
+-------------------------------------------------
+ROOT CAUSE:
+  The auto_newsletter_v3.36.py monolith had grown to ~4,400 lines, making it
+  increasingly difficult to debug, test, and reason about category-specific
+  regressions. A single bug in one section required reading the entire file.
+
+FIX:
+  Extracted the monolith into a proper Python package `vip_newsletter/` with
+  focused modules:
+    • config.py      — All constants, RSS sources, classifiers, pure functions
+    • cache.py       — Persistent item_cache.json logic (v3.34 retention model)
+    • dedup.py       — Near-duplicate detection (Jaccard + containment)
+    • fetchers.py    — EventsFetcher, TMDB, TVmaze, Music RSS
+    • ranking.py     — GeminiRanker with per-category priority prompts
+    • classifiers.py — Content formatting & category assignment
+    • senders.py     — Email abstraction (Brevo/SMTP ready, others stubbed)
+    • template.py    — Jinja2 rendering + plain-text generation
+    • main.py        — NewsletterScraper orchestrator
+
+  The original v3.36 logic is preserved verbatim; only the file boundaries
+  changed. No classifier keywords, no source lists, no event-fetcher logic
+  was modified during the move.
+
+SECURITY:
+  • Added `escape_rss()` helper in config.py. All RSS titles and summaries
+    are now HTML-escaped at ingestion to prevent feed-injection attacks.
+  • Template continues to use Jinja2 auto-escaping; removed unnecessary
+    `| safe` filters on user-controlled data.
+
+BUG FIX — Template Mismatch:
+  v3.36 collected `inTheaters`, `newMusic`, and `tvPremieres` data but the
+  HTML template never rendered them. Added three new template sections so
+  all fetched data now appears in the output.
+
+BUG FIX — Dependency Versioning:
+  Pinned all requirements.txt versions to prevent CI breakage from upstream
+  changes.
+
+BUG FIX — Cache Key Strategy:
+  GitHub workflow cache keys now use `vip-state-` prefix consistently.
+  (Note: each run_id still creates a unique save key; restore uses prefix
+  match. This is acceptable per GitHub cache eviction policy.)
+
+OPERATIONAL DISCIPLINE:
+  • Added `.gitignore` to prevent accidental commits of `.env`,
+    `item_cache.json`, and generated newsletter files.
+  • Added `tests/test_smoke.py` — minimal smoke test that imports the
+    package and verifies NewsletterScraper instantiation without secrets.
+  • Added `CHANGELOG_v4.0.txt` (this file) to maintain the audit trail
+    established in v3.8/v3.9.
+
+MIGRATION NOTES:
+  • Entry point changed from `python auto_newsletter_v3.36.py` to
+    `python -m vip_newsletter`
+  • GitHub workflow updated accordingly.
+  • `generate_newsletter.py` updated to use the same Jinja2 template
+    instead of the old Handlebars-style `{{#each}}` syntax.
+
+FILES ADDED/MODIFIED:
+  NEW:    vip_newsletter/__init__.py
+  NEW:    vip_newsletter/__main__.py
+  NEW:    vip_newsletter/config.py
+  NEW:    vip_newsletter/cache.py
+  NEW:    vip_newsletter/dedup.py
+  NEW:    vip_newsletter/fetchers.py
+  NEW:    vip_newsletter/ranking.py
+  NEW:    vip_newsletter/classifiers.py
+  NEW:    vip_newsletter/senders.py
+  NEW:    vip_newsletter/template.py
+  NEW:    vip_newsletter/main.py
+  NEW:    tests/test_smoke.py
+  NEW:    .gitignore
+  NEW:    CHANGELOG_v4.0.txt
+  MOD:    requirements.txt  (pinned versions)
+  MOD:    .github/workflows/newsletter.yml
+  MOD:    newsletter_template.html  (added 3 missing sections)
+  MOD:    generate_newsletter.py    (updated to Jinja2)
+  BAK:    auto_newsletter_v3.36.py  (preserved as backup)

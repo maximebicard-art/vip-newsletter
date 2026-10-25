@@ -272,5 +272,48 @@
         </div>
 
     </div><!-- end .email-wrapper -->
+
+    <!-- NEW: In Theaters -->
+    {% if inTheaters %}
+    <div class="section">
+      <h2>🎬 In Theaters</h2>
+      {% for film in inTheaters %}
+      <div class="item">
+        <div class="item-title">{{ film.title }}</div>
+        <div class="item-meta">Release: {{ film.release_date }} | {{ film.status }}</div>
+        {% if film.cast %}<div class="item-meta">Cast: {{ film.cast | join(', ') }}</div>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- NEW: New Music -->
+    {% if newMusic %}
+    <div class="section">
+      <h2>🎵 New Music</h2>
+      {% for track in newMusic %}
+      <div class="item">
+        <div class="item-title">{{ track.title }}</div>
+        <div class="item-meta">Source: {{ track.source }}</div>
+        {% if track.link %}<a href="{{ track.link }}" class="item-link">Read more →</a>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    <!-- NEW: TV Premieres -->
+    {% if tvPremieres %}
+    <div class="section">
+      <h2>📺 TV Premieres</h2>
+      {% for show in tvPremieres %}
+      <div class="item">
+        <div class="item-title">{{ show.title }}</div>
+        <div class="item-meta">{{ show.platform }} | {{ show.date }} | Season {{ show.season }}</div>
+        {% if show.is_new_series %}<span style="color:#c9a96e;font-weight:bold;">NEW SERIES</span>{% endif %}
+      </div>
+      {% endfor %}
+    </div>
+    {% endif %}
+
 </body>
 </html>
