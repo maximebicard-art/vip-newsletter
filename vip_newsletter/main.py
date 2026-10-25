@@ -109,7 +109,16 @@ class NewsletterScraper:
     def render(self):
         print("\n🎨 Rendering newsletter...")
         self.data["week_of"] = datetime.now().strftime("%B %d, %Y")
+        # v4.0: read all template variables from environment
+        self.data["preheader"] = os.getenv("PREHEADER", "")
+        self.data["company_name"] = os.getenv("COMPANY_NAME", "")
         self.data["company_address"] = os.getenv("COMPANY_ADDRESS", "")
+        self.data["company_url"] = os.getenv("COMPANY_URL", "")
+        self.data["sender_name"] = os.getenv("SENDER_NAME", "")
+        self.data["sender_title"] = os.getenv("SENDER_TITLE", "")
+        self.data["sender_email"] = os.getenv("SENDER_EMAIL", "")
+        self.data["sender_phone"] = os.getenv("SENDER_PHONE", "")
+        self.data["calendar_link"] = os.getenv("CALENDAR_LINK", "")
         html = render_newsletter(self.data)
         text = generate_plain_text(self.data)
         return html, text
