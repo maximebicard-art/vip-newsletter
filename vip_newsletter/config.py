@@ -68,7 +68,7 @@ def _recover_items_from_xml(text):
         title = grab("title")
         link = grab("link")
         if not link:
-            m = re.search(r'<link\b[^>]*href=["']([^"']+)["']', block, re.IGNORECASE)
+            m = re.search(r'<link\b[^>]*href=["\']([^"\']+)["\']', block, re.IGNORECASE)
             if m:
                 link = m.group(1).strip()
         summary = grab("description") or grab("summary") or grab("content")
