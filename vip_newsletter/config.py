@@ -12,11 +12,27 @@ from urllib.parse import quote_plus
 # v4.0 SECURITY: HTML escape helper
 # RSS titles/summaries are untrusted external input. We escape them at ingestion
 # so no feed can inject markup into the newsletter.
+# v4.0.1 FIX: several feeds ship titles that ALREADY contain HTML entities
+# ("&amp;", "&#x27;", ...). Escaping them as-is produced double-encoded output
+# like "&amp;amp;" showing up literally in the email. Worse, titles are escaped
+# again in classifiers._format_item, so a pre-escaped feed title could end up
+# triple-encoded. We therefore fully unescape (repeatedly, to also repair
+# entries that were already double-encoded by earlier runs) before escaping
+# exactly once. escape(_deep_unescape(x)) is idempotent, so calling it on
+# already-clean text is a no-op.
 # =============================================================================
+def _deep_unescape(text):
+    prev = None
+    while prev != text:
+        prev = text
+        text = _html.unescape(text)
+    return text
+
+
 def escape_rss(text):
     if not text:
         return ""
-    return _html.escape(text)
+    return _html.escape(_deep_unescape(text))
 
 # =============================================================================
 # v3.31/v3.32: Resilient feed fetching
