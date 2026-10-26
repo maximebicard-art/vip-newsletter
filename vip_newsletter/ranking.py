@@ -13,7 +13,7 @@ GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
 class GeminiRanker:
     def __init__(self, api_key=""):
         self.api_key = api_key or GEMINI_API_KEY
-        self.model = "gemini-2.0-flash"
+        self.model = "gemini-3.8-flash"
         self.base = "https://generativelanguage.googleapis.com/v1beta/models"
         self._available = None
 
