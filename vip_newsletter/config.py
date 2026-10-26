@@ -189,6 +189,20 @@ def _clean_gn_summary(summary, title):
     return text
 
 
+def strip_html(text):
+    """v4.0.3: some feeds (Drapers, WordPress-based) ship summaries full of
+    raw markup (<p>, <a href>, <br />). Escaping it keeps the tags visible
+    as literal text in the email. Unescape, drop the tags, keep the text,
+    and trim the WordPress boilerplate "The post ... appeared first on ...".
+    Applied at format time, so legacy cached entries are repaired too."""
+    if not text:
+        return ""
+    text = _html.unescape(text)
+    text = _TAG_RE.sub(" ", text)
+    text = re.sub(r"\s*The post .+? appeared first on .+?\.?\s*$", "", text)
+    return re.sub(r"\s+", " ", text).strip()
+
+
 # =============================================================================
 # v3.34: Job-listing filter
 # =============================================================================
@@ -369,6 +383,20 @@ SEMI_STATIC_EVENTS = {
     "CFDA Fashion Awards":           "2026-06-09",
     "LACMA Art+Film Gala":           "2026-11-07",
     "British Fashion Awards":        "2026-12-07",
+    # v4.0.3: January 2027 menswear/couture season — the FHCM/Camera Moda
+    # scrapers only surface the NEXT edition, so the January season must
+    # come from here. Dates are the usual slot for each event (provisional
+    # until the bodies publish official calendars).
+    "Pitti Uomo":                    "2027-01-12",
+    "Milan Men's Fashion Week":      "2027-01-13",
+    "Paris Men's Fashion Week":      "2027-01-19",
+    "Paris Haute Couture Week":      "2027-01-25",
+    # v4.0.3: women's FW27 season (exhaustive but pertinent)
+    "Copenhagen Fashion Week":       "2027-02-03",
+    "New York Fashion Week":         "2027-02-11",
+    "London Fashion Week":           "2027-02-19",
+    "Milan Fashion Week":            "2027-02-23",
+    "Paris Fashion Week":            "2027-03-01",
 }
 
 # =============================================================================
