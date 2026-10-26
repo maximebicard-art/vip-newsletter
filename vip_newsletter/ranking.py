@@ -2,6 +2,8 @@
 """
 VIP Newsletter — Gemini Ranking Engine
 v4.0: Extracted from monolithic v3.36.
+v4.0.2: GeminiRanker.rank() takes a caller-controlled max_items (the
+newsletter's MAX_ITEMS[category]) instead of a hardcoded 10.
 """
 import os
 import re
@@ -22,7 +24,10 @@ class GeminiRanker:
             self._available = bool(self.api_key)
         return self._available
 
-    def rank(self, items, category):
+    def rank(self, items, category, max_items=10):
+        """v4.0.2: max_items is caller-controlled (MAX_ITEMS[category])
+        instead of a hardcoded 10 — industryNews/events legitimately want
+        more items than partnerships, and Gemini previously ignored that."""
         if not items:
             return []
 
@@ -36,7 +41,7 @@ class GeminiRanker:
             item_lines.append(line)
 
         priority = self._get_priority(category)
-        return _gemini_select(self, item_lines, category, 10, priority, items)
+        return _gemini_select(self, item_lines, category, max_items, priority, items)
 
     def _get_priority(self, category):
         priorities = {
