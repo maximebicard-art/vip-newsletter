@@ -3,6 +3,8 @@
 VIP Newsletter — Data Fetchers
 v4.0: Extracted from monolithic v3.36.
 Contains: EventsFetcher, TMDB, TVmaze, Music RSS, and real-data selectors.
+v4.0.2: Music RSS drops aggregator "best of" curation posts via
+MUSIC_EXCLUDE_SIGNALS (they kept leaking into the New Music section).
 """
 import os
 import re
@@ -18,7 +20,7 @@ except ImportError:
 
 from .config import (
     TMDB_API_KEY, TMDB_BASE, MUSIC_RSS_SOURCES, MUSIC_RELEASE_SIGNALS,
-    SEMI_STATIC_EVENTS, MAX_ITEMS, _BROWSER_UA,
+    MUSIC_EXCLUDE_SIGNALS, SEMI_STATIC_EVENTS, MAX_ITEMS, _BROWSER_UA,
 )
 
 
@@ -162,6 +164,10 @@ def get_music_from_rss():
                 text_lower = f"{title} {summary}".lower()
 
                 if not any(sig in text_lower for sig in MUSIC_RELEASE_SIGNALS):
+                    continue
+                # v4.0.2: drop aggregator "best of / you should listen"
+                # curation posts — they are not actual new releases.
+                if any(sig in text_lower for sig in MUSIC_EXCLUDE_SIGNALS):
                     continue
                 if title in seen_titles:
                     continue
