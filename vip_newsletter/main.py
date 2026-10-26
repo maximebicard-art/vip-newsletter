@@ -108,17 +108,23 @@ class NewsletterScraper:
 
     def render(self):
         print("\n🎨 Rendering newsletter...")
-        self.data["week_of"] = datetime.now().strftime("%B %d, %Y")
-        # v4.0: read all template variables from environment
-        self.data["preheader"] = os.getenv("PREHEADER", "")
-        self.data["company_name"] = os.getenv("COMPANY_NAME", "")
-        self.data["company_address"] = os.getenv("COMPANY_ADDRESS", "")
-        self.data["company_url"] = os.getenv("COMPANY_URL", "")
-        self.data["sender_name"] = os.getenv("SENDER_NAME", "")
-        self.data["sender_title"] = os.getenv("SENDER_TITLE", "")
-        self.data["sender_email"] = os.getenv("SENDER_EMAIL", "")
-        self.data["sender_phone"] = os.getenv("SENDER_PHONE", "")
-        self.data["calendar_link"] = os.getenv("CALENDAR_LINK", "")
+        now = datetime.now()
+        self.data["week_of"] = now.strftime("%B %d, %Y")
+        # v4.0.1 FIX: the template expects UPPERCASE variable names
+        # ({{ SENDER_NAME }}, {{ MONTH }}, {{ YEAR }}, ...). The previous
+        # lowercase keys silently rendered an empty subtitle and an empty
+        # signature block.
+        self.data["PREHEADER"] = os.getenv("PREHEADER", "")
+        self.data["MONTH"] = now.strftime("%B")
+        self.data["YEAR"] = now.strftime("%Y")
+        self.data["SENDER_NAME"] = os.getenv("SENDER_NAME", "")
+        self.data["SENDER_TITLE"] = os.getenv("SENDER_TITLE", "")
+        self.data["SENDER_EMAIL"] = os.getenv("SENDER_EMAIL", "")
+        self.data["SENDER_PHONE"] = os.getenv("SENDER_PHONE", "")
+        self.data["COMPANY_NAME"] = os.getenv("COMPANY_NAME", "")
+        self.data["COMPANY_ADDRESS"] = os.getenv("COMPANY_ADDRESS", "")
+        self.data["COMPANY_URL"] = os.getenv("COMPANY_URL", "")
+        self.data["CALENDAR_LINK"] = os.getenv("CALENDAR_LINK", "")
         html = render_newsletter(self.data)
         text = generate_plain_text(self.data)
         return html, text
