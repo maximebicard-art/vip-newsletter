@@ -2,6 +2,11 @@
 """
 VIP Newsletter — Content Classifiers & Formatters
 v4.0: Extracted from monolithic v3.36.
+v4.0.2: industryNews now actually routes (empty classifier dict previously
+made _passes_classifier always return False, so the section was always empty);
+_clean_headline is now applied to every formatted item; extracted ambassador
+brands are validated with valid_ambassador_brand so noise like "A New" or a
+lone first name no longer renders as a "brand".
 """
 import re
 from .config import (
@@ -71,6 +76,12 @@ def _extract_ambassador(item):
     if brand_match:
         brand = brand_match.group(1).strip()
 
+    # v4.0.2: only keep the extracted brand if it looks like a real brand
+    # name. Previously anything regex-matched ("The", "A New", "His") was
+    # rendered as the ambassador's brand.
+    if not valid_ambassador_brand(brand):
+        brand = ""
+
     talent_match = re.search(r'^([A-Z][a-z]+(?:\s+[A-Z][a-z]+)?)', title)
     if talent_match:
         talent = talent_match.group(1).strip()
@@ -113,6 +124,12 @@ def _extract_partnership(item):
 
 
 def _format_item(item, category):
+    # v4.0.2: normalize headlines (drop "EXCLUSIVE:" / trailing "(Exclusive)",
+    # repair ",X" spacing). _clean_headline is a no-op on already-clean text,
+    # so cached items are unaffected.
+    item = dict(item)
+    item["title"] = _clean_headline(item.get("title", "")) or item.get("title", "")
+
     if category == "industryNews":
         return _format_industry_news(item)
     elif category == "ambassadors":
@@ -153,10 +170,16 @@ def apply_industry_news_tier(items):
 
 
 def valid_ambassador_brand(brand):
-    if not brand:
+    if not brand or len(brand) <= 1:
         return False
-    trivial = {"the", "a", "an", "new", "old", "big", "small", "his", "her"}
-    return brand.lower() not in trivial and len(brand) > 1
+    trivial = {"the", "a", "an", "new", "old", "big", "small", "his", "her",
+               "first", "latest", "global", "official"}
+    words = {w.strip(".'’").lower() for w in brand.split() if w.strip(".'’")}
+    # reject single trivial words AND phrases made only of trivial words
+    # ("A New Fragrance Campaign" used to extract brand = "A New")
+    if not words or words <= trivial:
+        return False
+    return True
 
 
 def categorize_content(raw_items):
@@ -182,7 +205,17 @@ def categorize_content(raw_items):
                 break
             for src_def in RSS_SOURCES.get(feed_key, []):
                 if src_def["source"] == source:
-                    if _passes_classifier(text_lower, CLASSIFIERS.get(target_cat, {})):
+                    # v4.0.2 FIX: CLASSIFIERS has no "industryNews" key, so
+                    # _passes_classifier(text, {}) always returned False and
+                    # the Industry News section was permanently empty. The
+                    # industry feeds are already curated at the source level
+                    # (RSS_SOURCES routing), so curated industry items pass
+                    # unconditionally — the job filter above still applies.
+                    if target_cat == "industryNews":
+                        passes = True
+                    else:
+                        passes = _passes_classifier(text_lower, CLASSIFIERS.get(target_cat, {}))
+                    if passes:
                         formatted = _format_item(item, target_cat)
                         if formatted and not _is_duplicate(formatted, categorized[target_cat], target_cat):
                             categorized[target_cat].append(formatted)
