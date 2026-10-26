@@ -7,6 +7,9 @@ made _passes_classifier always return False, so the section was always empty);
 _clean_headline is now applied to every formatted item; extracted ambassador
 brands are validated with valid_ambassador_brand so noise like "A New" or a
 lone first name no longer renders as a "brand".
+v4.0.3: strip_html is applied to titles/summaries at format time, so feeds
+that ship raw markup (Drapers) no longer leak literal <p>/<a> tags into the
+email — including for legacy cached entries.
 """
 import re
 from .config import (
@@ -14,7 +17,7 @@ from .config import (
     SOURCE_CATEGORY_RESTRICTIONS, HARD_NEWS_SIGNALS, classify_news_hardness,
     partnership_prestige, looks_like_explicit_ambassador,
     looks_like_ambassador_campaign, _clean_headline, is_job_listing,
-    _clean_gn_summary, escape_rss,
+    _clean_gn_summary, escape_rss, strip_html,
 )
 from .dedup import is_near_duplicate, _dedup_text
 
@@ -125,10 +128,12 @@ def _extract_partnership(item):
 
 def _format_item(item, category):
     # v4.0.2: normalize headlines (drop "EXCLUSIVE:" / trailing "(Exclusive)",
-    # repair ",X" spacing). _clean_headline is a no-op on already-clean text,
-    # so cached items are unaffected.
+    # repair ",X" spacing). v4.0.3: drop any raw HTML markup from feeds like
+    # Drapers before re-escaping (strip_html handles entities, so already
+    # cached escaped entries are repaired too). Both are no-ops on clean text.
     item = dict(item)
-    item["title"] = _clean_headline(item.get("title", "")) or item.get("title", "")
+    item["title"] = _clean_headline(strip_html(item.get("title", ""))) or item.get("title", "")
+    item["summary"] = strip_html(item.get("summary", ""))
 
     if category == "industryNews":
         return _format_industry_news(item)
