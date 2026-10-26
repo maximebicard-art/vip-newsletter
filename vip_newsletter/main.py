@@ -2,6 +2,10 @@
 """
 VIP Newsletter — Main Orchestrator
 v4.0: Extracted from monolithic v3.36.
+v4.0.2: New Music is deduplicated (the Oct 26 issue listed Slayyyter twice);
+TV Premieres render human-formatted dates ("Mon, Oct 27"); ranking now tiers
+Industry News BEFORE Gemini and caps the candidate pool at 40 per category,
+and Gemini receives the real per-category max instead of a hardcoded 10.
 """
 import os
 import sys
@@ -79,15 +83,28 @@ class NewsletterScraper:
 
         premieres = get_tvmaze_premieres()
         self.data["tvPremieres"] = [
-            {"title": p["title"], "date": p["date"], "platform": p["platform"],
-             "season": p["season"], "is_new_series": p["is_new_series"]}
+            {
+                "title": p["title"],
+                # v4.0.2: render "Mon, Oct 27" instead of the raw ISO date
+                "date": datetime.strptime(p["date"], "%Y-%m-%d").strftime("%a, %b %d"),
+                "platform": p["platform"],
+                "season": p["season"],
+                "is_new_series": p["is_new_series"],
+            }
             for p in premieres
         ][:MAX_ITEMS["tvPremieres"]]
 
         music = get_music_from_rss()
+        # v4.0.2: dedupe near-duplicate music headlines (different sources
+        # reporting the same release kept producing doubles, e.g. Slayyyter).
+        kept_music = []
+        for m in music:
+            if any(is_near_duplicate(m["title"], k["title"]) for k in kept_music):
+                continue
+            kept_music.append(m)
         self.data["newMusic"] = [
             {"title": m["title"], "source": m["source"], "link": m["link"]}
-            for m in music
+            for m in kept_music
         ][:MAX_ITEMS["newMusic"]]
 
     def rank_and_limit(self):
@@ -95,10 +112,15 @@ class NewsletterScraper:
         for cat in ["industryNews", "ambassadors", "partnerships", "castings",
                     "filmProjects", "tvProjects"]:
             items = self.data.get(cat, [])
-            if self.gemini.is_available() and len(items) > MAX_ITEMS[cat]:
-                items = self.gemini.rank(items, cat)
+            # v4.0.2: tier Industry News BEFORE Gemini so hard news with
+            # prestige always survives; previously Gemini picked from an
+            # unsorted pool and could drop the best items.
             if cat == "industryNews":
                 items = apply_industry_news_tier(items)
+            # Cap the Gemini candidate pool to keep prompts short/cheap
+            items = items[:40]
+            if self.gemini.is_available() and len(items) > MAX_ITEMS[cat]:
+                items = self.gemini.rank(items, cat, MAX_ITEMS[cat])
             self.data[cat] = apply_limits(items, MAX_ITEMS[cat])
             print(f"   {cat}: {len(self.data[cat])} items")
 
