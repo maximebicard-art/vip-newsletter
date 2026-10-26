@@ -2,11 +2,8 @@ name: VIP Newsletter v4.0
 
 on:
   schedule:
-    - cron: '0 */2 * * *'   # Poll every 2 hours
+    - cron: '0 */2 * * *'
   workflow_dispatch:
-
-env:
-  PYTHON_VERSION: '3.11'
 
 jobs:
   build-and-send:
@@ -17,20 +14,12 @@ jobs:
       - name: Set up Python
         uses: actions/setup-python@v5
         with:
-          python-version: ${{ env.PYTHON_VERSION }}
+          python-version: '3.11'
 
       - name: Install dependencies
         run: |
           python -m pip install --upgrade pip
           pip install -r requirements.txt
-
-      - name: Restore item cache
-        uses: actions/cache@v4
-        with:
-          path: item_cache.json
-          key: vip-state-${{ github.run_id }}
-          restore-keys: |
-            vip-state-
 
       - name: Generate newsletter
         env:
@@ -43,15 +32,3 @@ jobs:
           FROM_NAME: ${{ secrets.FROM_NAME }}
           SEND_EMAIL: ${{ secrets.SEND_EMAIL }}
         run: python -m vip_newsletter
-
-      - name: Save item cache
-        uses: actions/cache@v4
-        with:
-          path: item_cache.json
-          key: vip-state-${{ github.run_id }}
-
-      - name: Upload artifacts
-        uses: actions/upload-artifact@v4
-        with:
-          name: newsletter-html
-          path: newsletter_*.html
