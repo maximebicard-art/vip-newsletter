@@ -33,7 +33,7 @@ def merge_and_persist_cache(raw_items, cache_path=None):
     purge job ads retroactively, and return rebuilt item list."""
     if cache_path is None:
         cache_path = CACHE_PATH
-    from .config import is_job_listing, _clean_gn_summary
+    from .config import is_job_listing, _clean_gn_summary, escape_rss
 
     now = datetime.now()
     retention = timedelta(days=CACHE_RETENTION_DAYS)
@@ -96,6 +96,21 @@ def merge_and_persist_cache(raw_items, cache_path=None):
         if new_summary != rec.get("summary", ""):
             rec["summary"] = new_summary
             recleaned += 1
+
+    # v4.0.1 FIX: normalize HTML entities in cached titles/summaries.
+    # Entries written before the escape_rss fix contain double-encoded
+    # entities ("&amp;amp;"); escape_rss now deep-unescapes then escapes
+    # exactly once, which repairs them in place. Idempotent on clean text.
+    refixed = 0
+    for rec in kept.values():
+        for field in ("title", "summary"):
+            old = rec.get(field, "")
+            new = escape_rss(old)
+            if new != old:
+                rec[field] = new
+                refixed += 1
+    if refixed:
+        print(f"   🔧 Repaired HTML entities in {refixed} cached field(s)")
 
     _save_item_cache(cache_path, kept)
 
