@@ -2,7 +2,7 @@ name: VIP Newsletter v4.0
 
 on:
   schedule:
-    - cron: '0 */2 * * *'   # Poll every 2 hours
+    - cron: '0 8 * * 1'   # Envoi hebdomadaire : lundi à 8h00 UTC
   workflow_dispatch:
 
 env:
