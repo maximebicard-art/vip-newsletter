@@ -4,12 +4,24 @@ VIP Newsletter — Gemini Ranking Engine
 v4.0: Extracted from monolithic v3.36.
 v4.0.2: GeminiRanker.rank() takes a caller-controlled max_items (the
 newsletter's MAX_ITEMS[category]) instead of a hardcoded 10.
+v4.0.4: transient Gemini errors (429/503 "high demand") are retried with
+exponential backoff instead of degrading every category to an unranked
+first-N fallback in a single burst of 503s.
 """
 import os
 import re
+import time
 import requests
 
 GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
+
+# v4.0.4: status codes worth retrying. 503 is Gemini's "high demand" spike;
+# 429 is rate limiting; the 5xx set covers gateway blips. Anything else
+# (400/401/403) fails immediately — retrying a bad request is pointless.
+_RETRIABLE_STATUS = {429, 500, 502, 503, 504}
+_MAX_ATTEMPTS = 4
+_BASE_BACKOFF_S = 5
+_MAX_BACKOFF_S = 45
 
 
 class GeminiRanker:
@@ -141,21 +153,54 @@ Return ONLY a comma-separated list of the selected indices (e.g., "0, 3, 5, 7").
 If fewer than {max_items} items are truly newsworthy, return fewer indices.
 Do not include any explanation or commentary."""
 
-    try:
-        resp = requests.post(
-            f"{ranker.base}/{ranker.model}:generateContent?key={ranker.api_key}",
-            json={"contents": [{"parts": [{"text": prompt}]}]},
-            timeout=30,
-        )
-        if resp.status_code != 200:
-            print(f"      ⚠️ Gemini API error {resp.status_code}: {resp.text[:200]}")
+    # v4.0.4: retry transient failures. The 2026-11-16 run logged four 503s
+    # in one burst ("high demand") and every category silently fell back to
+    # unranked first-N items. Gemini spikes are short-lived, so we retry
+    # with exponential backoff (5s → 10s → 20s, honoring Retry-After when
+    # provided) before giving up. Worst-case added latency ≈ 35s.
+    resp = None
+    for attempt in range(1, _MAX_ATTEMPTS + 1):
+        try:
+            resp = requests.post(
+                f"{ranker.base}/{ranker.model}:generateContent?key={ranker.api_key}",
+                json={"contents": [{"parts": [{"text": prompt}]}]},
+                timeout=30,
+            )
+        except requests.RequestException as e:
+            # Network-level failure (DNS, timeout, reset) — also retriable.
+            if attempt < _MAX_ATTEMPTS:
+                delay = min(_BASE_BACKOFF_S * (2 ** (attempt - 1)), _MAX_BACKOFF_S)
+                print(f"      ⚠️ Gemini request error for {category} (attempt {attempt}/{_MAX_ATTEMPTS}): {e} — retrying in {delay}s")
+                time.sleep(delay)
+                continue
+            print(f"      ⚠️ Gemini ranking error for {category}: {e}")
             return original_items[:max_items]
 
-        text = resp.json().get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
-        indices = [int(x.strip()) for x in re.findall(r"\b\d+\b", text) if int(x.strip()) < len(original_items)]
-        selected = [original_items[i] for i in indices]
-        print(f"      ✓ Gemini selected {len(selected)}/{len(original_items)} for {category}")
-        return selected
-    except Exception as e:
-        print(f"      ⚠️ Gemini ranking error for {category}: {e}")
+        if resp.status_code == 200:
+            break
+
+        if resp.status_code in _RETRIABLE_STATUS and attempt < _MAX_ATTEMPTS:
+            retry_after = resp.headers.get("Retry-After", "").strip()
+            delay = int(retry_after) if retry_after.isdigit() else \
+                min(_BASE_BACKOFF_S * (2 ** (attempt - 1)), _MAX_BACKOFF_S)
+            print(f"      ⚠️ Gemini API error {resp.status_code} for {category} (attempt {attempt}/{_MAX_ATTEMPTS}) — retrying in {delay}s")
+            time.sleep(delay)
+        else:
+            print(f"      ⚠️ Gemini API error {resp.status_code}: {resp.text[:200]}")
+            return original_items[:max_items]
+    else:
+        # Loop exhausted without a 200 (only reachable if the last response
+        # was retriable but we were out of attempts — the in-loop branch
+        # already returned for that case, so this is a safety net).
         return original_items[:max_items]
+
+    try:
+        text = resp.json().get("candidates", [{}])[0].get("content", {}).get("parts", [{}])[0].get("text", "")
+    except (ValueError, IndexError, KeyError, AttributeError) as e:
+        print(f"      ⚠️ Gemini response parse error for {category}: {e}")
+        return original_items[:max_items]
+
+    indices = [int(x.strip()) for x in re.findall(r"\b\d+\b", text) if int(x.strip()) < len(original_items)]
+    selected = [original_items[i] for i in indices]
+    print(f"      ✓ Gemini selected {len(selected)}/{len(original_items)} for {category}")
+    return selected
