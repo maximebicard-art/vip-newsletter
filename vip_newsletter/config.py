@@ -748,6 +748,11 @@ CLASSIFIERS = {
             "is ambassador", "named the face", "tapped as", "tapped to",
             "ambassador", "the face of", "new face", "viva glam",
             "is the face", "joins as global", "as global brand",
+            # v4.0.4: French campaign vocabulary (La Réclame / Stratégies /
+            # GN FR feeds)
+            "campagne", "égérie", "egérie", "face de", "nouvelle égérie",
+            "devient l'égérie", "devient égérie", "ambassadrice", "ambassadeur",
+            "muse de", "nouvelle muse",
         ],
         "exclude": [
             "rumored", "speculated", "might", "could", "reportedly considering",
@@ -773,7 +778,10 @@ CLASSIFIERS = {
             "its first-ever", "fever dream",
         ],
         "must_have": ["ambassador", "face of", "campaign", "muse", "spokesperson",
-                      "signs with", "tapped", "named", "becomes"],
+                      "signs with", "tapped", "named", "becomes",
+                      # v4.0.4: French equivalents
+                      "campagne", "égérie", "egérie", "ambassadrice",
+                      "ambassadeur", "muse"],
     },
     "partnerships": {
         "keywords": [
