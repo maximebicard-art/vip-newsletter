@@ -6,6 +6,10 @@ v4.0.2: New Music is deduplicated (the Oct 26 issue listed Slayyyter twice);
 TV Premieres render human-formatted dates ("Mon, Oct 27"); ranking now tiers
 Industry News BEFORE Gemini and caps the candidate pool at 40 per category,
 and Gemini receives the real per-category max instead of a hardcoded 10.
+v4.0.4: Google News title/summary cleaning is applied based on the feed URL
+(news.google.com) instead of the "GN " source-name prefix, so named sources
+fetched via Google News (La Réclame, Stratégies) don't render with a
+trailing "- La Réclame" in every headline.
 """
 import os
 import sys
@@ -41,11 +45,16 @@ class NewsletterScraper:
                     print(f"      {note}")
                 if not feed or not hasattr(feed, "entries"):
                     continue
+                # v4.0.4: detect Google News by URL, not by source name.
+                # Named sources routed through Google News (La Réclame,
+                # Stratégies) also carry the "- Source" title suffix and the
+                # title-duplicating summary that need stripping.
+                is_gnews = "news.google.com" in src["url"]
                 for entry in feed.entries:
                     title = entry.get("title", "")
                     link = entry.get("link", "")
                     summary = entry.get("summary", entry.get("description", ""))
-                    if src["source"].startswith("GN "):
+                    if is_gnews:
                         title = _clean_gn_title(title)
                         summary = _clean_gn_summary(summary, title)
                     pub = None
