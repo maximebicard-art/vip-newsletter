@@ -155,6 +155,20 @@ def gnews_topic(query, when="7d"):
     return f"https://news.google.com/rss/search?q={q}&hl=en-US&gl=US&ceid=US:en"
 
 
+# v4.0.4: French-edition variants. French sources (La Réclame, Stratégies)
+# and French-language queries ('campagne', 'égérie') index much better on
+# the FR edition than on the US one. The FR edition also preserves accented
+# queries correctly.
+def gnews_feed_fr(site, when="7d"):
+    q = quote_plus(f"site:{site} when:{when}")
+    return f"https://news.google.com/rss/search?q={q}&hl=fr&gl=FR&ceid=FR:fr"
+
+
+def gnews_topic_fr(query, when="7d"):
+    q = quote_plus(f'{query} when:{when}')
+    return f"https://news.google.com/rss/search?q={q}&hl=fr&gl=FR&ceid=FR:fr"
+
+
 _GN_TITLE_SUFFIX_RE = re.compile(r"\s+-\s+[^-]{2,40}$")
 
 
@@ -326,6 +340,11 @@ SOURCE_CATEGORY_RESTRICTIONS = {
     "THR":                {"castings", "filmProjects", "tvProjects"},
     "THR TV":             {"tvProjects", "castings"},
     "THR Film":           {"filmProjects", "castings"},
+    # v4.0.4: French advertising/marketing press. La Réclame covers ad
+    # campaigns (ambassador + partnership material); Stratégies covers the
+    # marketing/comms industry (industry news + deals).
+    "La Réclame":         {"ambassadors", "partnerships"},
+    "Stratégies":         {"industryNews", "partnerships", "ambassadors"},
 }
 
 # =============================================================================
@@ -676,6 +695,15 @@ RSS_SOURCES = {
         {"url": gnews_topic('"global brand ambassador" fashion OR beauty'), "source": "GN Ambassadors"},
         {"url": gnews_topic('"brand ambassador" announced campaign fashion'), "source": "GN Ambassadors"},
         {"url": gnews_topic('celebrity fronts campaign fashion OR denim OR beauty'), "source": "GN Campaigns"},
+        # v4.0.4: French advertising & marketing press. La Réclame's own RSS
+        # is Cloudflare-protected (403 from CI), so route via Google News FR.
+        # These cover ad-campaign news the English-only feed list misses
+        # (e.g. Jacquemus x Laure Calamy, Nov 2026).
+        {"url": gnews_feed_fr("lareclame.fr"), "source": "La Réclame"},
+        {"url": gnews_feed_fr("strategies.fr"), "source": "Stratégies"},
+        # v4.0.4: French-language campaign query — the EN-only GN Campaigns
+        # queries index almost no French campaign coverage.
+        {"url": gnews_topic_fr('campagne publicité célébrité égérie OR "face de" luxe OR mode'), "source": "GN Campaigns"},
     ],
     "partnerships": [
         {"url": "https://wwd.com/feed", "source": "WWD"},
@@ -686,6 +714,9 @@ RSS_SOURCES = {
         {"url": "https://theimpression.com/feed/", "source": "The Impression"},
         {"url": "https://www.vogue.co.uk/feed/rss", "source": "British Vogue"},
         {"url": gnews_feed("fashionnetwork.com"), "source": "FashionNetwork"},
+        # v4.0.4: French ad-campaign deals (brand x agency/celebrity collabs)
+        {"url": gnews_feed_fr("lareclame.fr"), "source": "La Réclame"},
+        {"url": gnews_feed_fr("strategies.fr"), "source": "Stratégies"},
     ],
 }
 
@@ -756,6 +787,10 @@ CLASSIFIERS = {
             "collaborated on", "collaborated with", "collaborate on",
             "collab with", "links up with", "link up with", "limited-edition",
             "capsule",
+            # v4.0.4: French campaign vocabulary (La Réclame / Stratégies /
+            # GN FR feeds). "campagne" was missing, so French campaign news
+            # failed the keyword gate even when fetched.
+            "campagne", "signe", "égérie", "filmé par", "réalise",
         ],
         "exclude": [
             "rumored", "speculated", "might", "could", "allegedly",
@@ -784,7 +819,9 @@ CLASSIFIERS = {
                       "teams up with", "joins forces with", "partnership with",
                       "partners with", "partner on", "partner with",
                       "co-branded", "co-designed", " x ", "teams up", "links up with", "link up with",
-                      "collaborated on", "collaborated with"],
+                      "collaborated on", "collaborated with",
+                      # v4.0.4: French equivalents
+                      "campagne", "signe", "égérie", " x ", " × "],
     },
     "castings": {
         "keywords": [
