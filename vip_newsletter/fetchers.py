@@ -78,7 +78,7 @@ def get_tmdb_films():
         return []
 
     films = {}
-    for endpoint in ["now_playing", "upcoming"]]:
+    for endpoint in ["now_playing", "upcoming"]:
         try:
             resp = requests.get(
                 f"{TMDB_BASE}/movie/{endpoint}",
