@@ -49,9 +49,8 @@ _EVENT_RESOURCES = {
     "london men's fashion week":  "https://londonfashionweek.co.uk/",
     "london fashion week":        "https://londonfashionweek.co.uk/",
     "new york fashion week":      "https://cfda.com/fashion-calendar",
-    "copenhagen fashion week":    "https://cphfashionweek.com/",
+    "copenhagen fashion week":    "https://copenhagenfashionweek.com/schedule",
     "pitti uomo":                 "https://www.pittimmagine.com/",
-    "los angeles men's fashion week": "https://lafw.net/",
     # --- Award shows → nominees / official pages ---
     "tony awards":                "https://www.tonyawards.com/nominees/",
     "grammy awards":              "https://www.grammy.com/awards",
@@ -66,7 +65,7 @@ _EVENT_RESOURCES = {
     "bet awards":                 "https://www.bet.com/bet-awards",
     "british fashion awards":     "https://www.britishfashionawards.com/",
     # --- Galas (no nominees — official event page) ---
-    "lacma art+film gala":        "https://www.lacma.org/artfilmgala",
+    "lacma art+film gala":        "https://www.lacma.org/ArtPlusFilmGala",
 }
 
 
@@ -79,7 +78,7 @@ def get_tmdb_films():
         return []
 
     films = {}
-    for endpoint in ["now_playing", "upcoming"]:
+    for endpoint in ["now_playing", "upcoming"]]:
         try:
             resp = requests.get(
                 f"{TMDB_BASE}/movie/{endpoint}",

@@ -387,7 +387,6 @@ SEMI_STATIC_EVENTS = {
     "Milan Men's Fashion Week":      "2026-06-19",
     "London Men's Fashion Week":     "2026-06-20",
     "Paris Men's Fashion Week":      "2026-06-23",
-    "Los Angeles Men's Fashion Week":"2026-06-24",
     "Paris Haute Couture Week":      "2026-07-04",
     "Copenhagen Fashion Week":       "2026-08-03",
     "New York Fashion Week":         "2026-09-08",
@@ -829,7 +828,7 @@ CLASSIFIERS = {
                       "co-branded", "co-designed", " x ", "teams up", "links up with", "link up with",
                       "collaborated on", "collaborated with",
                       # v4.0.4: French equivalents
-                      "campagne", "signe", "égérie", " x ", " × "],
+                      "campagne", "signe", "égérie", " x ", " × "]
     },
     "castings": {
         "keywords": [
