@@ -5,6 +5,11 @@ v4.0: Extracted from monolithic v3.36.
 Contains: EventsFetcher, TMDB, TVmaze, Music RSS, and real-data selectors.
 v4.0.2: Music RSS drops aggregator "best of" curation posts via
 MUSIC_EXCLUDE_SIGNALS (they kept leaking into the New Music section).
+v4.0.5: Recurring events (fashion weeks, award shows) now carry a stable
+official link — fashion weeks point to their official calendar/schedule
+page, award shows to their nominees page — so every event in the
+newsletter is clickable even when the live source (TVmaze, semi-static
+list) provides no URL.
 """
 import os
 import re
@@ -22,6 +27,47 @@ from .config import (
     TMDB_API_KEY, TMDB_BASE, MUSIC_RSS_SOURCES, MUSIC_RELEASE_SIGNALS,
     MUSIC_EXCLUDE_SIGNALS, SEMI_STATIC_EVENTS, MAX_ITEMS, _BROWSER_UA,
 )
+
+
+# =============================================================================
+# v4.0.5: Official resource links for recurring events
+# Keys are event names normalized exactly like EventsFetcher._add() does
+# (lowercase, whitespace-collapsed). Fashion weeks link to their official
+# calendar/schedule page; award shows to their nominees page (or the
+# closest stable official page when nominees live on a per-year URL).
+# Consulted in _add(): the resource link wins over any link the source
+# provided, so TVmaze's generic officialSite never overrides the curated
+# nominees/calendar URL.
+# =============================================================================
+_EVENT_RESOURCES = {
+    # --- Fashion weeks → official calendars ---
+    "paris men's fashion week":   "https://www.fhcm.paris/en/paris-fashion-week/calendar",
+    "paris haute couture week":   "https://www.fhcm.paris/en/paris-fashion-week/calendar",
+    "paris fashion week":         "https://www.fhcm.paris/en/paris-fashion-week/calendar",
+    "milan men's fashion week":   "https://milanofashionweek.cameramoda.it/en/",
+    "milan fashion week":         "https://milanofashionweek.cameramoda.it/en/",
+    "london men's fashion week":  "https://londonfashionweek.co.uk/",
+    "london fashion week":        "https://londonfashionweek.co.uk/",
+    "new york fashion week":      "https://cfda.com/fashion-calendar",
+    "copenhagen fashion week":    "https://cphfashionweek.com/",
+    "pitti uomo":                 "https://www.pittimmagine.com/",
+    "los angeles men's fashion week": "https://lafw.net/",
+    # --- Award shows → nominees / official pages ---
+    "tony awards":                "https://www.tonyawards.com/nominees/",
+    "grammy awards":              "https://www.grammy.com/awards",
+    "emmy awards":                "https://www.emmys.com/awards/nominees-winners",
+    "golden globe awards":        "https://www.goldenglobes.com/",
+    "bafta film awards":          "https://www.bafta.org/awards",
+    "mtv vmas":                   "https://www.mtv.com/vma",
+    "american music awards":      "https://www.theamas.com/nominees/",
+    "cfda fashion awards":        "https://cfda.com/awards",
+    "met gala":                   "https://www.vogue.com/tag/met-gala",
+    "gotham tv awards":           "https://thegotham.org/category/gotham-awards/",
+    "bet awards":                 "https://www.bet.com/bet-awards",
+    "british fashion awards":     "https://www.britishfashionawards.com/",
+    # --- Galas (no nominees — official event page) ---
+    "lacma art+film gala":        "https://www.lacma.org/artfilmgala",
+}
 
 
 # =============================================================================
@@ -302,7 +348,8 @@ class EventsFetcher:
         for e in events:
             e.pop("_sort_dt", None)
 
-        print(f"   📅 Events total: {len(events)}")
+        linked = sum(1 for e in events if e.get("link"))
+        print(f"   📅 Events total: {len(events)} ({linked} with link)")
         return events
 
     def _get(self, url, timeout=12):
@@ -353,10 +400,15 @@ class EventsFetcher:
         if key in self._seen:
             return
         self._seen.add(key)
+        # v4.0.5: recurring events (fashion weeks, award shows, galas) get
+        # their curated official resource link — calendar page for fashion
+        # weeks, nominees page for award shows — overriding the generic
+        # link the live source may have provided.
+        resource = _EVENT_RESOURCES.get(key)
         events.append({
             "date": dt.strftime("%b %d"),
             "name": name,
-            "link": link,
+            "link": resource or link,
             "source": source,
             "_sort_dt": dt,
         })
